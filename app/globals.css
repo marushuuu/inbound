@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eefaf5;
+  --color-brand-100: #d6f2e7;
+  --color-brand-200: #aee5d1;
+  --color-brand-300: #7dd0b4;
+  --color-brand-400: #4bb494;
+  --color-brand-500: #33997c;
+  --color-brand-600: #2e8b74;
+  --color-brand-700: #256f5e;
+  --color-brand-800: #20594c;
+  --color-brand-900: #1c4a40;
+
+  --font-sans: var(--font-geist-sans), "Hiragino Sans", "Noto Sans JP",
+    sans-serif;
+}
+
+body {
+  @apply bg-white text-slate-800 antialiased;
+}
