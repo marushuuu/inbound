@@ -24,9 +24,13 @@ export default function ProjectIndexPage({
     const step =
       project.status === "contracted"
         ? "contract"
-        : project.status === "presented" || project.status === "estimating"
-          ? "estimate"
-          : "hearing";
+        : project.status === "presented"
+          ? project.schedule
+            ? "contract"
+            : "schedule"
+          : project.status === "estimating"
+            ? "estimate"
+            : "hearing";
     router.replace(`/projects/${id}/${step}`);
   }, [ready, project, id, router]);
 

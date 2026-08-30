@@ -65,8 +65,8 @@ export default function EstimatePage({
   };
 
   const present = () => {
-    updateProject(id, { status: "presented", nextAction: "契約手続きへ" });
-    router.push(`/projects/${id}/contract`);
+    updateProject(id, { status: "presented", nextAction: "施工日時の調整へ" });
+    router.push(`/projects/${id}/schedule`);
   };
 
   return (
@@ -201,7 +201,7 @@ export default function EstimatePage({
       )}
 
       <div className="flex flex-col gap-2.5">
-        <PrimaryButton onClick={present}>この内容で提示 → 契約へ</PrimaryButton>
+        <PrimaryButton onClick={present}>この内容で提示 → 施工日時へ</PrimaryButton>
         <Link
           href={`/projects/${id}/estimate/print`}
           className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white text-sm font-medium text-ink-700 hover:border-brand-400"

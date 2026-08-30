@@ -5,6 +5,7 @@ import { useState } from "react";
 import { IconCalendar, IconPlus } from "@/components/icons";
 import { Card, StatusBadge, STATUS_LABEL } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { DEFAULT_TASK_IDS } from "@/lib/workmaster";
 import type { Project, ProjectStatus } from "@/lib/types";
 
 const FILTERS: (ProjectStatus | "all")[] = [
@@ -45,6 +46,8 @@ export default function ProjectListPage() {
       },
       selectedPattern: "take",
       equipmentChoice: {},
+      taskIds: DEFAULT_TASK_IDS,
+      schedule: null,
       contract: { checks: [false, false, false], signature: null, contractedAt: null },
     };
     addProject(project);

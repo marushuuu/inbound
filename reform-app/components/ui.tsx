@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { PatternKey, ProjectStatus } from "@/lib/types";
+import type { ProjectStatus } from "@/lib/types";
 import { IconChevronLeft } from "./icons";
 
 export const STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -77,10 +77,11 @@ export function SectionTitle({ children }: { children: ReactNode }) {
   return <h2 className="text-sm font-bold">{children}</h2>;
 }
 
-const STEPS: { key: PatternKey | string; label: string; href: string }[] = [
-  { key: "hearing", label: "ヒアリング", href: "hearing" },
-  { key: "estimate", label: "見積", href: "estimate" },
-  { key: "contract", label: "契約", href: "contract" },
+const STEPS: { label: string; href: string }[] = [
+  { label: "ヒアリング", href: "hearing" },
+  { label: "見積", href: "estimate" },
+  { label: "施工日時", href: "schedule" },
+  { label: "契約", href: "contract" },
 ];
 
 export function StepNav({
@@ -88,7 +89,7 @@ export function StepNav({
   current,
 }: {
   projectId: string;
-  current: "hearing" | "estimate" | "contract";
+  current: "hearing" | "estimate" | "schedule" | "contract";
 }) {
   return (
     <div className="flex gap-1.5">

@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { IconCatalog, IconHome, IconSearch } from "./icons";
+import { IconCatalog, IconClock, IconHome, IconSearch } from "./icons";
 
 const NAV = [
   { href: "/", label: "案件", icon: IconHome },
   { href: "/search", label: "見積検索", icon: IconSearch },
   { href: "/catalog", label: "カタログ", icon: IconCatalog },
+  { href: "/works", label: "工事マスタ", icon: IconClock },
 ];
 
 function isActive(pathname: string, href: string): boolean {

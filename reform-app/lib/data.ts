@@ -156,6 +156,8 @@ export const SEED_PROJECTS: Project[] = [
     },
     selectedPattern: "take",
     equipmentChoice: {},
+    taskIds: ["removal", "vanity-install", "cloth-repair"],
+    schedule: null,
     contract: { checks: [false, false, false], signature: null, contractedAt: null },
   },
   {
@@ -176,6 +178,8 @@ export const SEED_PROJECTS: Project[] = [
     },
     selectedPattern: "take",
     equipmentChoice: {},
+    taskIds: ["removal", "vanity-install", "cloth-repair"],
+    schedule: null,
     contract: { checks: [false, false, false], signature: null, contractedAt: null },
   },
   {
@@ -196,6 +200,8 @@ export const SEED_PROJECTS: Project[] = [
     },
     selectedPattern: "ume",
     equipmentChoice: {},
+    taskIds: ["removal", "vanity-install", "cloth-repair"],
+    schedule: null,
     contract: {
       checks: [true, true, true],
       signature: null,
@@ -220,6 +226,8 @@ export const SEED_PROJECTS: Project[] = [
     },
     selectedPattern: "take",
     equipmentChoice: {},
+    taskIds: ["removal", "vanity-install", "cloth-repair"],
+    schedule: null,
     contract: { checks: [false, false, false], signature: null, contractedAt: null },
   },
 ];

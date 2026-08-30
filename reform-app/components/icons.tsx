@@ -126,6 +126,15 @@ export function IconLock(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconClock(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15.5 14" />
+    </svg>
+  );
+}
+
 export function IconBath(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base({ strokeWidth: 1.6, ...props })}>

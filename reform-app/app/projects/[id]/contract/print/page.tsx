@@ -4,6 +4,7 @@ import { use } from "react";
 import PrintToolbar from "@/components/PrintToolbar";
 import { calcPattern, yen } from "@/lib/calc";
 import { PATTERN_DEFAULTS } from "@/lib/data";
+import { formatDateJa, minToTime } from "@/lib/schedule";
 import { useProject, useStore } from "@/lib/store";
 
 /** 工事請負契約書帳票(ブラウザの印刷機能でPDF保存) */
@@ -31,7 +32,12 @@ export default function ContractPrintPage({
     ],
     ["請負代金額", `${yen(totals.total)}(うち消費税 ${yen(totals.tax)})`],
     ["工事場所", "〔工事場所〕"],
-    ["工期", "〔着工日〕 〜 〔完工日〕"],
+    [
+      "施工日時",
+      project.schedule
+        ? `${formatDateJa(project.schedule.date)} ${minToTime(project.schedule.startMin)} 〜 ${minToTime(project.schedule.endMin)}`
+        : "〔施工日時 未確定〕",
+    ],
     ["支払条件", "完工後 一括"],
     [
       "契約締結日",

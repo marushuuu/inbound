@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { calcPattern, yen } from "@/lib/calc";
 import { PATTERN_DEFAULTS } from "@/lib/data";
+import { formatDateJa, minToTime } from "@/lib/schedule";
 import { useProject, useStore } from "@/lib/store";
 
 const CHECK_ITEMS = [
@@ -95,13 +96,27 @@ export default function ContractPage({
     if (!canvas || !allChecked || !hasStroke) return;
     updateProject(id, {
       status: "contracted",
-      nextAction: "着工日調整",
+      nextAction: project.schedule
+        ? `施工 ${formatDateJa(project.schedule.date)} ${minToTime(project.schedule.startMin)}〜`
+        : "着工日調整",
       contract: {
         ...project.contract,
         signature: canvas.toDataURL("image/png"),
         contractedAt: new Date().toISOString().slice(0, 10),
       },
     });
+    // Googleカレンダーの仮予定を「確定」へ更新(ベストエフォート)
+    const eventIds = project.schedule?.calendarEventIds;
+    if (eventIds && Object.keys(eventIds).length > 0) {
+      const events = project.schedule!.tasks
+        .filter((t) => eventIds[t.workItemId])
+        .map((t) => ({ workItemId: t.workItemId, ref: eventIds[t.workItemId], name: t.name }));
+      fetch("/api/calendar/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer: project.customer, events }),
+      }).catch(() => {});
+    }
   };
 
   return (
@@ -129,6 +144,15 @@ export default function ContractPage({
         </div>
       )}
 
+      {!project.schedule && (
+        <Link
+          href={`/projects/${id}/schedule`}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-note-500/60 bg-note-100 text-[13px] font-bold text-note-700"
+        >
+          施工日時が未確定です — 先に施工日時を調整する
+        </Link>
+      )}
+
       <Card>
         <SectionTitle>ご契約内容</SectionTitle>
         <div className="mt-2.5">
@@ -139,6 +163,12 @@ export default function ContractPage({
               `${PATTERN_DEFAULTS[project.selectedPattern].label}(${PATTERN_DEFAULTS[project.selectedPattern].sub})`,
             ],
             ["契約金額", `${yen(totals.total)}(税込)`],
+            [
+              "施工日時",
+              project.schedule
+                ? `${formatDateJa(project.schedule.date)} ${minToTime(project.schedule.startMin)} 〜 ${minToTime(project.schedule.endMin)}`
+                : "未確定",
+            ],
             ["お支払条件", "完工後 一括"],
           ].map(([k, v]) => (
             <div
