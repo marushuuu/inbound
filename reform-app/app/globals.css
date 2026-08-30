@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  /* ブランドカラー: バーミリオンレッド(ANDPAD系の色味) */
+  --color-brand-50: #fdf1ee;
+  --color-brand-100: #fbe0d9;
+  --color-brand-200: #f6bdb0;
+  --color-brand-300: #ef937d;
+  --color-brand-400: #e9664a;
+  --color-brand-500: #e33e21;
+  --color-brand-600: #c93318;
+  --color-brand-700: #a52a15;
+  --color-brand-800: #872515;
+  --color-brand-900: #6f2113;
+
+  /* サイドバー・見出し用チャコール */
+  --color-ink-600: #57534e;
+  --color-ink-700: #4a4744;
+  --color-ink-800: #3d3a37;
+  --color-ink-900: #2b2926;
+
+  /* 通知・バッジ用アンバー */
+  --color-note-100: #fdf0d8;
+  --color-note-500: #f5a51d;
+  --color-note-700: #b46e07;
+
+  --font-sans: var(--font-noto-sans-jp), "Hiragino Sans", "Yu Gothic",
+    sans-serif;
+}
+
+body {
+  @apply bg-stone-100 text-ink-900 antialiased;
+}
