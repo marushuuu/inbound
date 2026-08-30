@@ -146,11 +146,17 @@ export const SEED_PROJECTS: Project[] = [
     nextAction: "次アポ 9/2(火) 13:30 見積提示",
     hearing: {
       triggers: ["設備の故障", "寒さ対策"],
-      budget: "100〜200万円",
-      budgetCeiling: "¥2,200,000",
-      timing: "10月中旬までに完了希望(お孫さん来訪前)",
-      history: "2018年 給湯器交換(他社施工)",
-      keymanTogether: true,
+      budget: 2200000,
+      timingFrom: "2026-10-01",
+      timingTo: "2026-10-15",
+      history: [
+        {
+          id: "h-tanaka-1",
+          yearMonth: "2018-06",
+          description: "給湯器交換(他社施工)",
+          source: "manual",
+        },
+      ],
       riskMemo:
         "土台の腐食が見つかった場合、最大 +15万円の可能性あり。お客様へ口頭説明済み。",
     },
@@ -158,7 +164,7 @@ export const SEED_PROJECTS: Project[] = [
     equipmentChoice: {},
     taskIds: ["removal", "vanity-install", "cloth-repair"],
     schedule: null,
-    contract: { checks: [false, false, false], signature: null, contractedAt: null },
+    contract: { checks: [false, false, false], signature: null, contractorSignature: null, contractedAt: null },
   },
   {
     id: "p-sato",
@@ -169,18 +175,17 @@ export const SEED_PROJECTS: Project[] = [
     nextAction: "見積提出期限 9/4(木)",
     hearing: {
       triggers: ["老朽化"],
-      budget: "200〜300万円",
-      budgetCeiling: "",
-      timing: "年内希望",
-      history: "なし",
-      keymanTogether: false,
+      budget: 2800000,
+      timingFrom: null,
+      timingTo: "2026-12-31",
+      history: [],
       riskMemo: "",
     },
     selectedPattern: "take",
     equipmentChoice: {},
     taskIds: ["removal", "vanity-install", "cloth-repair"],
     schedule: null,
-    contract: { checks: [false, false, false], signature: null, contractedAt: null },
+    contract: { checks: [false, false, false], signature: null, contractorSignature: null, contractedAt: null },
   },
   {
     id: "p-suzuki",
@@ -191,11 +196,10 @@ export const SEED_PROJECTS: Project[] = [
     nextAction: "着工予定 9/16(火)",
     hearing: {
       triggers: ["設備の故障"],
-      budget: "〜100万円",
-      budgetCeiling: "",
-      timing: "できるだけ早く",
-      history: "なし",
-      keymanTogether: true,
+      budget: 700000,
+      timingFrom: null,
+      timingTo: null,
+      history: [],
       riskMemo: "",
     },
     selectedPattern: "ume",
@@ -205,6 +209,7 @@ export const SEED_PROJECTS: Project[] = [
     contract: {
       checks: [true, true, true],
       signature: null,
+      contractorSignature: null,
       contractedAt: "2026-08-24",
     },
   },
@@ -218,17 +223,16 @@ export const SEED_PROJECTS: Project[] = [
     hearing: {
       triggers: [],
       budget: null,
-      budgetCeiling: "",
-      timing: "",
-      history: "",
-      keymanTogether: false,
+      timingFrom: null,
+      timingTo: null,
+      history: [],
       riskMemo: "",
     },
     selectedPattern: "take",
     equipmentChoice: {},
     taskIds: ["removal", "vanity-install", "cloth-repair"],
     schedule: null,
-    contract: { checks: [false, false, false], signature: null, contractedAt: null },
+    contract: { checks: [false, false, false], signature: null, contractorSignature: null, contractedAt: null },
   },
 ];
 
@@ -302,11 +306,4 @@ export const TRIGGER_OPTIONS = [
   "寒さ対策",
   "バリアフリー",
   "イメージ一新",
-];
-
-export const BUDGET_OPTIONS = [
-  "〜100万円",
-  "100〜200万円",
-  "200〜300万円",
-  "300万円〜",
 ];

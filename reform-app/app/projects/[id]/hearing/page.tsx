@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { use } from "react";
-import { IconAlert, IconSearch } from "@/components/icons";
+import { IconAlert, IconPlus, IconSearch } from "@/components/icons";
 import {
   Card,
   Chip,
@@ -11,9 +11,25 @@ import {
   SectionTitle,
   StepNav,
 } from "@/components/ui";
-import { BUDGET_OPTIONS, TRIGGER_OPTIONS } from "@/lib/data";
+import { formatFullDateJa } from "@/lib/schedule";
+import { TRIGGER_OPTIONS } from "@/lib/data";
 import { useProject, useStore } from "@/lib/store";
-import type { Hearing } from "@/lib/types";
+import type { Hearing, HistoryRecord } from "@/lib/types";
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 41 }, (_, i) => CURRENT_YEAR - i);
+const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+function splitYearMonth(ym: string): { year: number | null; month: number | null } {
+  const m = ym.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return { year: null, month: null };
+  return { year: Number(m[1]), month: Number(m[2]) };
+}
+
+function joinYearMonth(year: number | null, month: number | null): string {
+  if (!year || !month) return "";
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
 
 export default function HearingPage({
   params,
@@ -42,6 +58,44 @@ export default function HearingPage({
         : [...hearing.triggers, t],
     });
 
+  const updateHistory = (recordId: string, changes: Partial<HistoryRecord>) =>
+    patch({
+      history: hearing.history.map((r) =>
+        r.id === recordId ? { ...r, ...changes } : r,
+      ),
+    });
+
+  const removeHistory = (recordId: string) =>
+    patch({ history: hearing.history.filter((r) => r.id !== recordId) });
+
+  const addManualHistory = () =>
+    patch({
+      history: [
+        ...hearing.history,
+        {
+          id: `h-${Date.now()}`,
+          yearMonth: "",
+          description: "",
+          source: "manual",
+        },
+      ],
+    });
+
+  // ANDPAD連携(実装後)で自動取得される想定のダミー動作。
+  // 実連携が有効になった段階で、ここを実際のANDPAD APIからの取得に置き換える。
+  const fetchFromAndpad = () =>
+    patch({
+      history: [
+        ...hearing.history,
+        {
+          id: `h-andpad-${Date.now()}`,
+          yearMonth: "2020-04",
+          description: "外壁塗装工事(ANDPAD連携で取得・サンプル)",
+          source: "andpad",
+        },
+      ],
+    });
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
@@ -67,68 +121,146 @@ export default function HearingPage({
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionTitle>ご予算の目安</SectionTitle>
-        <div className="flex flex-wrap gap-2">
-          {BUDGET_OPTIONS.map((b) => (
-            <Chip
-              key={b}
-              selected={hearing.budget === b}
-              onClick={() => patch({ budget: hearing.budget === b ? null : b })}
-            >
-              {b}
-            </Chip>
-          ))}
-        </div>
+        <SectionTitle>ご予算</SectionTitle>
         <Card className="flex items-center justify-between py-3">
           <span className="text-[13px] text-ink-600">ご予算</span>
-          <input
-            value={hearing.budgetCeiling}
-            onChange={(e) => patch({ budgetCeiling: e.target.value })}
-            placeholder="¥2,200,000"
-            className="w-40 text-right text-[15px] font-bold focus:outline-none"
-          />
+          <div className="flex items-center gap-1">
+            <span className="text-[15px] font-bold">¥</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={hearing.budget != null ? hearing.budget.toLocaleString("ja-JP") : ""}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/[^0-9]/g, "");
+                patch({ budget: digits ? Number(digits) : null });
+              }}
+              placeholder="0"
+              className="w-36 text-right text-[15px] font-bold focus:outline-none"
+            />
+          </div>
         </Card>
       </section>
 
       <section className="flex flex-col gap-2.5">
         <SectionTitle>希望時期</SectionTitle>
-        <input
-          value={hearing.timing}
-          onChange={(e) => patch({ timing: e.target.value })}
-          placeholder="例: 10月中旬までに完了希望"
-          className="min-h-12 rounded-xl border border-stone-200 bg-white px-3.5 text-sm focus:border-brand-500 focus:outline-none"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={hearing.timingFrom ?? ""}
+            onChange={(e) => patch({ timingFrom: e.target.value || null })}
+            className="min-h-12 flex-1 rounded-xl border border-stone-200 bg-white px-3 text-sm focus:border-brand-500 focus:outline-none"
+          />
+          <span className="text-sm text-ink-600">〜</span>
+          <input
+            type="date"
+            value={hearing.timingTo ?? ""}
+            onChange={(e) => patch({ timingTo: e.target.value || null })}
+            className="min-h-12 flex-1 rounded-xl border border-stone-200 bg-white px-3 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+        {(hearing.timingFrom || hearing.timingTo) && (
+          <p className="text-xs text-ink-600">
+            {formatFullDateJa(hearing.timingFrom)} 〜 {formatFullDateJa(hearing.timingTo)}
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionTitle>過去のリフォーム履歴</SectionTitle>
-        <input
-          value={hearing.history}
-          onChange={(e) => patch({ history: e.target.value })}
-          placeholder="例: 2018年 給湯器交換(他社施工)"
-          className="min-h-12 rounded-xl border border-stone-200 bg-white px-3.5 text-sm focus:border-brand-500 focus:outline-none"
-        />
-      </section>
-
-      <Card className="flex items-center justify-between py-3">
-        <div>
-          <div className="text-sm font-bold">キーマン同席</div>
-          <div className="text-xs text-ink-600">意思決定者の同席を確認</div>
+        <div className="flex items-center justify-between">
+          <SectionTitle>過去のリフォーム履歴</SectionTitle>
+          <button
+            type="button"
+            onClick={fetchFromAndpad}
+            className="text-[11px] font-bold text-brand-600 underline"
+          >
+            ANDPADから取得
+          </button>
         </div>
+
+        <div className="flex flex-col gap-2.5">
+          {hearing.history.map((record) => {
+            const { year, month } = splitYearMonth(record.yearMonth);
+            const readOnly = record.source === "andpad";
+            return (
+              <Card key={record.id} className="flex flex-col gap-2 py-3">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                      readOnly
+                        ? "bg-brand-100 text-brand-700"
+                        : "bg-stone-100 text-ink-600"
+                    }`}
+                  >
+                    {readOnly ? "ANDPAD連携" : "手入力"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeHistory(record.id)}
+                    className="min-h-9 px-2 text-xs text-ink-500"
+                  >
+                    削除
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    disabled={readOnly}
+                    value={year ?? ""}
+                    onChange={(e) =>
+                      updateHistory(record.id, {
+                        yearMonth: joinYearMonth(Number(e.target.value) || null, month),
+                      })
+                    }
+                    className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2 text-sm disabled:bg-stone-100 disabled:text-ink-600"
+                  >
+                    <option value="">年</option>
+                    {YEAR_OPTIONS.map((y) => (
+                      <option key={y} value={y}>
+                        {y}年
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    disabled={readOnly}
+                    value={month ?? ""}
+                    onChange={(e) =>
+                      updateHistory(record.id, {
+                        yearMonth: joinYearMonth(year, Number(e.target.value) || null),
+                      })
+                    }
+                    className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2 text-sm disabled:bg-stone-100 disabled:text-ink-600"
+                  >
+                    <option value="">月</option>
+                    {MONTH_OPTIONS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}月
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <input
+                  type="text"
+                  disabled={readOnly}
+                  value={record.description}
+                  onChange={(e) =>
+                    updateHistory(record.id, { description: e.target.value })
+                  }
+                  placeholder="例: 給湯器交換(他社施工)"
+                  className="min-h-11 rounded-lg border border-stone-300 px-3 text-sm disabled:bg-stone-100 disabled:text-ink-600"
+                />
+              </Card>
+            );
+          })}
+        </div>
+
         <button
           type="button"
-          role="switch"
-          aria-checked={hearing.keymanTogether}
-          onClick={() => patch({ keymanTogether: !hearing.keymanTogether })}
-          className={`flex h-8 w-13 items-center rounded-full px-1 transition-colors ${
-            hearing.keymanTogether
-              ? "justify-end bg-brand-500"
-              : "justify-start bg-stone-300"
-          }`}
+          onClick={addManualHistory}
+          className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-dashed border-stone-300 text-sm font-medium text-ink-700 hover:border-brand-400"
         >
-          <span className="size-6 rounded-full bg-white" />
+          <IconPlus width={16} height={16} />
+          履歴を追加
         </button>
-      </Card>
+      </section>
 
       <section className="flex flex-col gap-2.5">
         <div className="flex items-center gap-1.5">

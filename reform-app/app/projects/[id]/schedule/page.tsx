@@ -3,21 +3,15 @@
 import { useRouter } from "next/navigation";
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import { IconCalendar } from "@/components/icons";
+import { Card, PageHeader, PrimaryButton, StepNav } from "@/components/ui";
 import {
-  Card,
-  PageHeader,
-  PrimaryButton,
-  SectionTitle,
-  StepNav,
-} from "@/components/ui";
-import {
+  DAY_END,
+  DAY_START,
   addDays,
   allocateDay,
-  findCandidates,
   formatDateJa,
   minToTime,
   todayISO,
-  type Candidate,
 } from "@/lib/schedule";
 import { WORKERS, demoBusyFor } from "@/lib/workers";
 import { useProject, useStore } from "@/lib/store";
@@ -26,6 +20,18 @@ import type { BusyBlock, ScheduledTask } from "@/lib/types";
 interface GoogleStatus {
   enabled: boolean;
   connected: string[];
+}
+
+function toTimeInputValue(min: number): string {
+  const h = String(Math.floor(min / 60)).padStart(2, "0");
+  const m = String(min % 60).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function fromTimeInputValue(value: string): number | null {
+  const m = value.match(/^(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
 }
 
 export default function SchedulePage({
@@ -39,7 +45,9 @@ export default function SchedulePage({
   const project = useProject(id);
 
   const [slotMin, setSlotMin] = useState(30);
-  const [date, setDate] = useState<string | null>(null);
+  // 初期表示日は翌日。ユーザーが自由にカレンダーで変更できる。
+  const [date, setDate] = useState<string | null>(() => addDays(todayISO(), 1));
+  const [startMin, setStartMin] = useState(DAY_START);
   const [google, setGoogle] = useState<GoogleStatus>({ enabled: false, connected: [] });
   const [liveBusy, setLiveBusy] = useState<{
     date: string;
@@ -85,44 +93,36 @@ export default function SchedulePage({
     };
   }, [liveBusy]);
 
-  const candidates: Candidate[] = useMemo(
-    () => findCandidates(tasks, busyFor, addDays(todayISO(), 1), 2),
-    [tasks, busyFor],
-  );
-
-  // 表示中の日付(未選択なら最短候補)
-  const viewDate = date ?? candidates[0]?.date ?? null;
-
   // 表示日の実データ(FreeBusy)を取得
   useEffect(() => {
-    if (!viewDate || !google.enabled) return;
+    if (!date || !google.enabled) return;
     fetch("/api/calendar/freebusy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: viewDate }),
+      body: JSON.stringify({ date }),
     })
       .then((r) => r.json())
       .then((data: { busy: Record<string, BusyBlock[]> }) =>
-        setLiveBusy({ date: viewDate, busy: data.busy ?? {} }),
+        setLiveBusy({ date, busy: data.busy ?? {} }),
       )
       .catch(() => {});
-  }, [viewDate, google.enabled]);
+  }, [date, google.enabled]);
 
-  // 8:00付近まで自動スクロール
+  // 選択した開始時刻付近まで自動スクロール
   useEffect(() => {
     const el = gridScrollRef.current;
     if (!el) return;
     const rowH = slotMin === 15 ? 14 : 22;
-    el.scrollTop = ((7 * 60) / slotMin) * rowH;
-  }, [slotMin, viewDate]);
+    el.scrollTop = Math.max(0, (startMin - 60) / slotMin) * rowH;
+  }, [slotMin, date, startMin]);
 
   if (!ready) return <p className="text-sm text-ink-600">読み込み中…</p>;
   if (!project) return <p className="text-sm text-ink-600">案件が見つかりません。</p>;
 
   const busyByWorker: Record<string, BusyBlock[]> = {};
-  for (const w of WORKERS) busyByWorker[w.id] = viewDate ? busyFor(w.id, viewDate) : [];
-  const allocation: ScheduledTask[] | null = viewDate
-    ? allocateDay(tasks, busyByWorker)
+  for (const w of WORKERS) busyByWorker[w.id] = date ? busyFor(w.id, date) : [];
+  const allocation: ScheduledTask[] | null = date
+    ? allocateDay(tasks, busyByWorker, startMin)
     : null;
 
   const rows = (24 * 60) / slotMin;
@@ -132,7 +132,7 @@ export default function SchedulePage({
     Math.max(1, Math.ceil(end / slotMin) - Math.floor(start / slotMin));
 
   const reserve = async () => {
-    if (!viewDate || !allocation) return;
+    if (!date || !allocation) return;
     setReserving(true);
     setError(null);
     let eventIds: Record<string, string> | null = null;
@@ -145,7 +145,7 @@ export default function SchedulePage({
             projectId: project.id,
             customer: project.customer,
             workTitle: project.workTitle,
-            date: viewDate,
+            date,
             tasks: allocation,
           }),
         });
@@ -155,19 +155,19 @@ export default function SchedulePage({
         setError("Googleカレンダーへの仮予定登録に失敗しました(日程はアプリに保存されます)");
       }
     }
-    const startMin = Math.min(...allocation.map((t) => t.startMin));
-    const endMin = Math.max(...allocation.map((t) => t.endMin));
+    const allocStart = Math.min(...allocation.map((t) => t.startMin));
+    const allocEnd = Math.max(...allocation.map((t) => t.endMin));
     updateProject(id, {
       schedule: {
-        date: viewDate,
-        startMin,
-        endMin,
+        date,
+        startMin: allocStart,
+        endMin: allocEnd,
         tasks: allocation,
         reservedAt: new Date().toISOString(),
         calendarEventIds: eventIds,
       },
       status: "presented",
-      nextAction: `施工 ${formatDateJa(viewDate)} ${minToTime(startMin)}〜`,
+      nextAction: `施工 ${formatDateJa(date)} ${minToTime(allocStart)}〜`,
     });
     setReserving(false);
     router.push(`/projects/${id}/contract`);
@@ -233,21 +233,49 @@ export default function SchedulePage({
         )}
       </Card>
 
+      {/* 施工日時の入力 */}
+      <Card className="flex flex-col gap-3 py-3">
+        <div className="flex items-center gap-2">
+          <label className="w-16 shrink-0 text-[13px] text-ink-600">施工日</label>
+          <input
+            type="date"
+            value={date ?? ""}
+            onChange={(e) => setDate(e.target.value || null)}
+            className="min-h-11 flex-1 rounded-lg border border-stone-300 px-3 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="w-16 shrink-0 text-[13px] text-ink-600">開始時刻</label>
+          <input
+            type="time"
+            step={900}
+            min={toTimeInputValue(DAY_START)}
+            max={toTimeInputValue(DAY_END)}
+            value={toTimeInputValue(startMin)}
+            onChange={(e) => {
+              const m = fromTimeInputValue(e.target.value);
+              if (m !== null) setStartMin(m);
+            }}
+            className="min-h-11 flex-1 rounded-lg border border-stone-300 px-3 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+      </Card>
+
       {/* タイムグリッド */}
-      {viewDate && (
+      {date && (
         <Card className="p-3">
           <div className="flex items-center justify-between pb-2">
             <button
               type="button"
-              onClick={() => setDate(addDays(viewDate, -1))}
+              onClick={() => setDate(addDays(date, -1))}
               className="min-h-11 min-w-11 text-ink-600"
             >
               ◀
             </button>
-            <span className="text-sm font-bold">{formatDateJa(viewDate)}</span>
+            <span className="text-sm font-bold">{formatDateJa(date)}</span>
             <button
               type="button"
-              onClick={() => setDate(addDays(viewDate, 1))}
+              onClick={() => setDate(addDays(date, 1))}
               className="min-h-11 min-w-11 text-ink-600"
             >
               ▶
@@ -330,51 +358,11 @@ export default function SchedulePage({
           </div>
           {!allocation && (
             <p className="pt-2 text-center text-xs font-bold text-note-700">
-              この日は全工程を組めません(別の日を選んでください)
+              この日時では全工程を組めません(日付・開始時刻を変えてください)
             </p>
           )}
         </Card>
       )}
-
-      {/* 日程候補 */}
-      <section className="flex flex-col gap-2.5">
-        <SectionTitle>組める日程の候補</SectionTitle>
-        {candidates.map((c, i) => {
-          const selected = c.date === viewDate;
-          return (
-            <button
-              key={c.date}
-              type="button"
-              onClick={() => setDate(c.date)}
-              className={`relative flex flex-col gap-1 rounded-xl border bg-white p-3.5 text-left ${
-                selected ? "border-2 border-brand-500" : "border-stone-200"
-              }`}
-            >
-              {i === 0 && (
-                <span className="absolute -top-2.5 left-3.5 rounded-full bg-brand-500 px-2.5 py-0.5 text-[11px] font-bold text-white">
-                  最短
-                </span>
-              )}
-              <div className="flex items-center justify-between">
-                <span
-                  className={`text-[15px] font-bold ${selected ? "text-brand-600" : ""}`}
-                >
-                  {formatDateJa(c.date)} {minToTime(c.startMin)} 〜 {minToTime(c.endMin)}
-                </span>
-                <span className="text-xs font-bold text-green-700">全担当 確保可能</span>
-              </div>
-              <span className="text-xs text-ink-600">
-                合計{totalMinutes.toLocaleString()}分を空き時間枠に自動割付
-              </span>
-            </button>
-          );
-        })}
-        {candidates.length === 0 && (
-          <p className="text-sm text-ink-600">
-            3週間以内に組める日程がありません。工事マスタの所要時間か担当者の予定を確認してください。
-          </p>
-        )}
-      </section>
 
       {error && (
         <p className="rounded-lg bg-note-100 p-3 text-xs font-bold text-note-700">{error}</p>

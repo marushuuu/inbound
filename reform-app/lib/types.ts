@@ -31,19 +31,34 @@ export interface WorkLine {
   amount: number;
 }
 
+export type HistorySource = "manual" | "andpad";
+
+/** 過去のリフォーム履歴 1件(ANDPAD連携で自動取得したものと手入力の両方を扱う) */
+export interface HistoryRecord {
+  id: string;
+  /** YYYY-MM */
+  yearMonth: string;
+  description: string;
+  source: HistorySource;
+}
+
 export interface Hearing {
   triggers: string[];
-  budget: string | null;
-  budgetCeiling: string;
-  timing: string;
-  history: string;
-  keymanTogether: boolean;
+  /** 円。未入力は null */
+  budget: number | null;
+  /** YYYY-MM-DD。未定は null */
+  timingFrom: string | null;
+  timingTo: string | null;
+  history: HistoryRecord[];
   riskMemo: string;
 }
 
 export interface ContractState {
   checks: [boolean, boolean, boolean];
+  /** 発注者(お客様)の署名 */
   signature: string | null;
+  /** 請負者(自社)の署名。締結時点の会社署名のコピーを保持する */
+  contractorSignature: string | null;
   contractedAt: string | null;
 }
 

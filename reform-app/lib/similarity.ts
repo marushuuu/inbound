@@ -20,20 +20,11 @@ export function inferBuiltAge(meta: string): string | null {
   return "築31年〜";
 }
 
-/** ヒアリングの予算帯と過去見積の金額が重なるか */
-function budgetMatches(budget: string | null, total: number): boolean {
-  switch (budget) {
-    case "〜100万円":
-      return total <= 1_000_000;
-    case "100〜200万円":
-      return total > 1_000_000 && total <= 2_000_000;
-    case "200〜300万円":
-      return total > 2_000_000 && total <= 3_000_000;
-    case "300万円〜":
-      return total > 3_000_000;
-    default:
-      return false;
-  }
+/** ヒアリングの予算(円)と過去見積の金額が近いか(予算の70%〜130%以内) */
+function budgetMatches(budget: number | null, total: number): boolean {
+  if (!budget || budget <= 0) return false;
+  const ratio = total / budget;
+  return ratio >= 0.7 && ratio <= 1.3;
 }
 
 export interface SimilarityResult {
@@ -67,7 +58,7 @@ export function scoreSimilarity(
 
   if (budgetMatches(project.hearing.budget, estimate.total)) {
     score += 2;
-    reasons.push("予算帯と金額が合致");
+    reasons.push("予算と金額が近い");
   }
 
   if (project.meta.includes("木造") && estimate.structure === "木造") {

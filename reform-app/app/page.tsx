@@ -38,17 +38,16 @@ export default function ProjectListPage() {
       hearing: {
         triggers: [],
         budget: null,
-        budgetCeiling: "",
-        timing: "",
-        history: "",
-        keymanTogether: false,
+        timingFrom: null,
+        timingTo: null,
+        history: [],
         riskMemo: "",
       },
       selectedPattern: "take",
       equipmentChoice: {},
       taskIds: DEFAULT_TASK_IDS,
       schedule: null,
-      contract: { checks: [false, false, false], signature: null, contractedAt: null },
+      contract: { checks: [false, false, false], signature: null, contractorSignature: null, contractedAt: null },
     };
     addProject(project);
     setCustomer("");
