@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import {
@@ -7,6 +8,7 @@ import {
   IconArrowUpRight,
   IconBath,
   IconCheck,
+  IconDoc,
   IconVanity,
 } from "@/components/icons";
 import {
@@ -198,7 +200,16 @@ export default function EstimatePage({
         </div>
       )}
 
-      <PrimaryButton onClick={present}>この内容で提示 → 契約へ</PrimaryButton>
+      <div className="flex flex-col gap-2.5">
+        <PrimaryButton onClick={present}>この内容で提示 → 契約へ</PrimaryButton>
+        <Link
+          href={`/projects/${id}/estimate/print`}
+          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white text-sm font-medium text-ink-700 hover:border-brand-400"
+        >
+          <IconDoc width={16} height={16} />
+          見積書PDFを出力
+        </Link>
+      </div>
 
       {/* グレード選択モーダル */}
       {gradeModal && (

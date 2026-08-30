@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { use, useRef, useState } from "react";
-import { IconCheck, IconLock, IconPen } from "@/components/icons";
+import { IconCheck, IconDoc, IconLock, IconPen } from "@/components/icons";
 import {
   Card,
   PageHeader,
@@ -113,9 +114,18 @@ export default function ContractPage({
       <StepNav projectId={id} current="contract" />
 
       {contracted && (
-        <div className="flex items-center gap-2 rounded-xl bg-brand-500 p-3.5 text-sm font-bold text-white">
-          <IconCheck width={18} height={18} />
-          {project.contract.contractedAt} に契約を締結しました
+        <div className="flex flex-col gap-2.5">
+          <div className="flex items-center gap-2 rounded-xl bg-brand-500 p-3.5 text-sm font-bold text-white">
+            <IconCheck width={18} height={18} />
+            {project.contract.contractedAt} に契約を締結しました
+          </div>
+          <Link
+            href={`/projects/${id}/contract/print`}
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-500 bg-white text-sm font-bold text-brand-600 hover:bg-brand-50"
+          >
+            <IconDoc width={16} height={16} />
+            契約書PDFを出力
+          </Link>
         </div>
       )}
 

@@ -22,7 +22,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh">
       {/* デスクトップ: ダークサイドバー */}
-      <aside className="hidden w-56 shrink-0 flex-col bg-ink-800 text-stone-300 lg:flex">
+      <aside className="hidden w-56 shrink-0 flex-col bg-ink-800 text-stone-300 print:hidden lg:flex">
         <div className="flex h-14 items-center gap-2 bg-brand-500 px-4 text-white">
           <span className="text-lg font-bold tracking-wide">リフォーム営業</span>
         </div>
@@ -54,19 +54,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* モバイル: レッドトップバー */}
-        <header className="flex h-12 items-center justify-between bg-brand-500 px-4 text-white lg:hidden">
+        <header className="flex h-12 items-center justify-between bg-brand-500 px-4 text-white print:hidden lg:hidden">
           <span className="text-base font-bold tracking-wide">リフォーム営業</span>
           <span className="rounded-full bg-note-500 px-2 py-0.5 text-xs font-bold text-ink-900">
             MVP
           </span>
         </header>
 
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4 lg:max-w-5xl lg:px-8 lg:pb-8">
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-24 pt-4 print:max-w-none print:p-0 lg:max-w-5xl lg:px-8 lg:pb-8">
           {children}
         </main>
 
         {/* モバイル: ボトムナビ */}
-        <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-stone-200 bg-white lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-stone-200 bg-white print:hidden lg:hidden">
           {NAV.map(({ href, label, icon: Icon }) => {
             const active = isActive(pathname, href);
             return (

@@ -80,7 +80,7 @@ export default function HearingPage({
           ))}
         </div>
         <Card className="flex items-center justify-between py-3">
-          <span className="text-[13px] text-ink-600">上限の感触</span>
+          <span className="text-[13px] text-ink-600">ご予算</span>
           <input
             value={hearing.budgetCeiling}
             onChange={(e) => patch({ budgetCeiling: e.target.value })}
