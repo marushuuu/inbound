@@ -1,0 +1,12 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "1. 案件一覧", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "Hearing.dc.html", "title": "2. ヒアリングシート", "x": 480, "y": 0, "w": 390, "h": 1150 },
+    { "file": "Estimate.dc.html", "title": "3. 見積作成(松竹梅)", "x": 960, "y": 0, "w": 390, "h": 1290 },
+    { "file": "Contract.dc.html", "title": "4. 契約サイン", "x": 1440, "y": 0, "w": 390, "h": 1020 }
+  ],
+  "annotations": [
+    { "id": "flow-note", "x": 0, "y": -150, "w": 420, "text": "Fast系(水回り)の営業フロー: 案件一覧 → ヒアリング → 見積(松竹梅) → その場で契約サイン。\n金額・明細はサンプル見積書PDF(浴室・洗面改装 ¥1,903,000)の実数値。" }
+  ],
+  "launch": { "view": "canvas" }
+}

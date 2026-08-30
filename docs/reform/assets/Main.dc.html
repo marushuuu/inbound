@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', system-ui, sans-serif; }
+    a { color: #e33e21; } a:hover { color: #c93318; }
+  </style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; background: #f6f4f1; display: flex; flex-direction: column; overflow: hidden; color: #292524;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px 16px;">
+    <div style="font-size: 22px; font-weight: 700;">案件</div>
+    <div style="display: flex; gap: 8px;">
+      <div style="width: 44px; height: 44px; border-radius: 22px; background: #ffffff; border: 1px solid #e7e2db; display: flex; align-items: center; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#57534e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 8px; padding: 0 16px 12px 16px;">
+    <div style="height: 34px; padding: 0 14px; border-radius: 17px; background: #e33e21; color: #ffffff; font-size: 13px; font-weight: 500; display: flex; align-items: center;">すべて</div>
+    <div style="height: 34px; padding: 0 14px; border-radius: 17px; background: #ffffff; border: 1px solid #e7e2db; color: #57534e; font-size: 13px; display: flex; align-items: center;">ヒアリング済</div>
+    <div style="height: 34px; padding: 0 14px; border-radius: 17px; background: #ffffff; border: 1px solid #e7e2db; color: #57534e; font-size: 13px; display: flex; align-items: center;">見積提示中</div>
+    <div style="height: 34px; padding: 0 14px; border-radius: 17px; background: #ffffff; border: 1px solid #e7e2db; color: #57534e; font-size: 13px; display: flex; align-items: center;">契約</div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px; padding: 4px 16px 16px 16px; overflow: hidden;">
+
+    <div style="background: #ffffff; border: 1px solid #e7e2db; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 16px; font-weight: 700;">田中様邸</div>
+        <div style="font-size: 12px; font-weight: 500; color: #b45309; background: #fdf0e0; border-radius: 6px; padding: 4px 8px;">見積提示中</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 13px; color: #78716c;">浴室・洗面改装｜築28年 木造</div>
+        <div style="font-size: 14px; font-weight: 700;">¥1,903,000</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; color: #e33e21; font-size: 13px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e33e21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+        <span>次アポ 9/2(火) 13:30 見積提示</span>
+      </div>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e7e2db; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 16px; font-weight: 700;">佐藤様邸</div>
+        <div style="font-size: 12px; font-weight: 500; color: #e33e21; background: #fbe0d9; border-radius: 6px; padding: 4px 8px;">ヒアリング済</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 13px; color: #78716c;">キッチン交換＋内装｜築31年 木造</div>
+        <div style="font-size: 14px; font-weight: 700; color: #78716c;">概算中</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; color: #e33e21; font-size: 13px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e33e21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+        <span>見積提出期限 9/4(木)</span>
+      </div>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e7e2db; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 16px; font-weight: 700;">鈴木様邸</div>
+        <div style="font-size: 12px; font-weight: 500; color: #ffffff; background: #e33e21; border-radius: 6px; padding: 4px 8px;">契約済</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 13px; color: #78716c;">トイレ・給湯器交換｜築15年</div>
+        <div style="font-size: 14px; font-weight: 700;">¥684,000</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; color: #78716c; font-size: 13px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3l7 7-11 11H3v-7z"></path></svg>
+        <span>着工予定 9/16(火)</span>
+      </div>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e7e2db; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 16px; font-weight: 700;">高橋様邸</div>
+        <div style="font-size: 12px; font-weight: 500; color: #57534e; background: #f0ede8; border-radius: 6px; padding: 4px 8px;">新規</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-size: 13px; color: #78716c;">洗面台交換｜Web問い合わせ</div>
+        <div style="font-size: 14px; font-weight: 700; color: #78716c;">—</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px; color: #b45309; font-size: 13px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92V21a1 1 0 0 1-1.09 1A19 19 0 0 1 3 4.09 1 1 0 0 1 4 3h4.09a1 1 0 0 1 1 .75l1 3.5a1 1 0 0 1-.29 1L8 10a16 16 0 0 0 6 6l1.75-1.8a1 1 0 0 1 1-.29l3.5 1a1 1 0 0 1 .75 1.01z"></path></svg>
+        <span>要架電 訪問日調整</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position: absolute; right: 16px; bottom: 84px; width: 56px; height: 56px; border-radius: 28px; background: #e33e21; box-shadow: 0 4px 12px rgba(227, 62, 33, 0.35); display: flex; align-items: center; justify-content: center;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </div>
+
+  <div style="height: 64px; background: #ffffff; border-top: 1px solid #e7e2db; display: flex;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #e33e21;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e33e21" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>
+      <div style="font-size: 11px; font-weight: 700;">案件</div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #78716c;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"></path><line x1="9" y1="11" x2="15" y2="11"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+      <div style="font-size: 11px;">見積検索</div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #78716c;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h6v18H6a2 2 0 0 0-2 2z"></path><path d="M20 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 1 2 2z"></path></svg>
+      <div style="font-size: 11px;">カタログ</div>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #78716c;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#78716c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.01a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55h.01a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.01a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"></path></svg>
+      <div style="font-size: 11px;">設定</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
