@@ -11,6 +11,7 @@ import {
   IconDoc,
   IconVanity,
 } from "@/components/icons";
+import EstimateEditor from "@/components/EstimateEditor";
 import {
   Card,
   PageHeader,
@@ -19,9 +20,9 @@ import {
   StepNav,
 } from "@/components/ui";
 import { calcPattern, resolveEquipment, yen } from "@/lib/calc";
-import { PATTERN_DEFAULTS, PATTERN_ORDER, getProduct, gradeSeries } from "@/lib/data";
+import { PATTERN_DEFAULTS, PATTERN_ORDER, WORK_LINES, getProduct, gradeSeries } from "@/lib/data";
 import { useProject, useStore } from "@/lib/store";
-import type { EquipmentCategory, PatternKey } from "@/lib/types";
+import type { EquipmentCategory, EstimateLine, PatternKey } from "@/lib/types";
 
 const CATEGORY_LABEL: Record<EquipmentCategory, string> = {
   bath: "ユニットバス",
@@ -35,15 +36,40 @@ export default function EstimatePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { updateProject, ready } = useStore();
+  const { updateProject, works, ready } = useStore();
   const project = useProject(id);
   const [gradeModal, setGradeModal] = useState<EquipmentCategory | null>(null);
+  const [editing, setEditing] = useState(false);
 
   if (!ready) return <p className="text-sm text-ink-600">読み込み中…</p>;
   if (!project) return <p className="text-sm text-ink-600">案件が見つかりません。</p>;
 
   const pattern = project.selectedPattern;
   const totals = calcPattern(project, pattern);
+  const custom = project.estimateLines !== null;
+
+  /** サンプル見積の明細を編集可能な形にコピーして自作見積へ切り替える */
+  const startEditing = () => {
+    if (!custom) {
+      const seeded: EstimateLine[] = WORK_LINES.map((l, i) => ({
+        id: `l-seed-${i}`,
+        section: l.section,
+        name: l.name,
+        spec: l.spec ?? "",
+        quantity: 1,
+        unit: "式",
+        unitPrice: l.amount,
+      }));
+      updateProject(id, { estimateLines: seeded });
+    }
+    setEditing(true);
+  };
+
+  /** 明細をゼロから組み立て直す */
+  const startBlank = () => {
+    updateProject(id, { estimateLines: [] });
+    setEditing(true);
+  };
 
   const selectPattern = (p: PatternKey) =>
     updateProject(id, {
@@ -153,6 +179,82 @@ export default function EstimatePage({
             </div>
           );
         })}
+      </Card>
+
+      {/* 明細の編集(工事マスタから選んで自分で見積を作る) */}
+      <Card className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <SectionTitle>工事明細</SectionTitle>
+          <span className="rounded-md bg-stone-100 px-2 py-0.5 text-[11px] font-bold text-ink-600">
+            {custom ? "自作見積" : "サンプル見積"}
+          </span>
+        </div>
+
+        {editing ? (
+          <>
+            <EstimateEditor
+              lines={project.estimateLines ?? []}
+              works={works}
+              onChange={(next) => updateProject(id, { estimateLines: next })}
+            />
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="min-h-11 rounded-lg border border-stone-300 text-[13px] font-bold text-ink-700"
+            >
+              編集を終える
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-xs leading-relaxed text-ink-600">
+              {custom
+                ? `明細 ${project.estimateLines?.length ?? 0} 件。工事マスタから選んで組み立てた見積です。`
+                : "類似の過去見積をベースにしたサンプル明細です。自分で作り直すこともできます。"}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={startEditing}
+                className="min-h-12 flex-1 rounded-xl bg-brand-500 text-sm font-bold text-white hover:bg-brand-600"
+              >
+                {custom ? "明細を編集" : "この明細をベースに編集"}
+              </button>
+              {!custom && (
+                <button
+                  type="button"
+                  onClick={startBlank}
+                  className="min-h-12 rounded-xl border border-stone-300 px-4 text-sm font-medium text-ink-700 hover:border-brand-400"
+                >
+                  ゼロから作成
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </Card>
+
+      {/* 工事場所・支払条件(見積書・契約書の表紙項目) */}
+      <Card className="flex flex-col gap-2.5">
+        <SectionTitle>見積書の記載事項</SectionTitle>
+        <div className="flex items-center gap-2">
+          <label className="w-20 shrink-0 text-[13px] text-ink-600">工事場所</label>
+          <input
+            value={project.siteAddress}
+            onChange={(e) => updateProject(id, { siteAddress: e.target.value })}
+            placeholder="例: 東京都〇〇区〇〇 1-2-3"
+            className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="w-20 shrink-0 text-[13px] text-ink-600">支払条件</label>
+          <input
+            value={project.paymentTerms}
+            onChange={(e) => updateProject(id, { paymentTerms: e.target.value })}
+            placeholder="例: 完工後 一括"
+            className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2.5 text-sm focus:border-brand-500 focus:outline-none"
+          />
+        </div>
       </Card>
 
       {/* 内訳 */}

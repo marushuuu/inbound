@@ -20,17 +20,6 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 41 }, (_, i) => CURRENT_YEAR - i);
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 
-function splitYearMonth(ym: string): { year: number | null; month: number | null } {
-  const m = ym.match(/^(\d{4})-(\d{2})$/);
-  if (!m) return { year: null, month: null };
-  return { year: Number(m[1]), month: Number(m[2]) };
-}
-
-function joinYearMonth(year: number | null, month: number | null): string {
-  if (!year || !month) return "";
-  return `${year}-${String(month).padStart(2, "0")}`;
-}
-
 export default function HearingPage({
   params,
 }: {
@@ -74,7 +63,8 @@ export default function HearingPage({
         ...hearing.history,
         {
           id: `h-${Date.now()}`,
-          yearMonth: "",
+          year: null,
+          month: null,
           description: "",
           source: "manual",
         },
@@ -89,7 +79,8 @@ export default function HearingPage({
         ...hearing.history,
         {
           id: `h-andpad-${Date.now()}`,
-          yearMonth: "2020-04",
+          year: 2020,
+          month: 4,
           description: "外壁塗装工事(ANDPAD連携で取得・サンプル)",
           source: "andpad",
         },
@@ -179,7 +170,6 @@ export default function HearingPage({
 
         <div className="flex flex-col gap-2.5">
           {hearing.history.map((record) => {
-            const { year, month } = splitYearMonth(record.yearMonth);
             const readOnly = record.source === "andpad";
             return (
               <Card key={record.id} className="flex flex-col gap-2 py-3">
@@ -204,10 +194,10 @@ export default function HearingPage({
                 <div className="flex gap-2">
                   <select
                     disabled={readOnly}
-                    value={year ?? ""}
+                    value={record.year ?? ""}
                     onChange={(e) =>
                       updateHistory(record.id, {
-                        yearMonth: joinYearMonth(Number(e.target.value) || null, month),
+                        year: Number(e.target.value) || null,
                       })
                     }
                     className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2 text-sm disabled:bg-stone-100 disabled:text-ink-600"
@@ -221,10 +211,10 @@ export default function HearingPage({
                   </select>
                   <select
                     disabled={readOnly}
-                    value={month ?? ""}
+                    value={record.month ?? ""}
                     onChange={(e) =>
                       updateHistory(record.id, {
-                        yearMonth: joinYearMonth(year, Number(e.target.value) || null),
+                        month: Number(e.target.value) || null,
                       })
                     }
                     className="min-h-11 flex-1 rounded-lg border border-stone-300 px-2 text-sm disabled:bg-stone-100 disabled:text-ink-600"

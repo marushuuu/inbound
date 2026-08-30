@@ -14,7 +14,7 @@ export default function ContractPrintPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { ready } = useStore();
+  const { company, ready } = useStore();
   const project = useProject(id);
 
   if (!ready) return <p className="p-4 text-sm text-ink-600">読み込み中…</p>;
@@ -23,6 +23,8 @@ export default function ContractPrintPage({
 
   const totals = calcPattern(project, project.selectedPattern);
   const contracted = project.status === "contracted";
+  // 締結済みなら締結時点のスナップショット、未締結なら現在の会社情報を表示する
+  const contractor = project.contract.contractorProfile ?? company;
 
   const rows: [string, string][] = [
     ["工事名称", project.workTitle],
@@ -31,14 +33,14 @@ export default function ContractPrintPage({
       `${PATTERN_DEFAULTS[project.selectedPattern].label}(${PATTERN_DEFAULTS[project.selectedPattern].sub})`,
     ],
     ["請負代金額", `${yen(totals.total)}(うち消費税 ${yen(totals.tax)})`],
-    ["工事場所", "〔工事場所〕"],
+    ["工事場所", project.siteAddress || "〔工事場所〕"],
     [
       "施工日時",
       project.schedule
         ? `${formatDateJa(project.schedule.date)} ${minToTime(project.schedule.startMin)} 〜 ${minToTime(project.schedule.endMin)}`
         : "〔施工日時 未確定〕",
     ],
-    ["支払条件", "完工後 一括"],
+    ["支払条件", project.paymentTerms || "〔支払条件〕"],
     [
       "契約締結日",
       contracted && project.contract.contractedAt
@@ -62,8 +64,8 @@ export default function ContractPrintPage({
       </h1>
 
       <p className="mt-5 text-[13px] leading-relaxed">
-        発注者 {project.customer.replace(/様?邸?$/, "")} 様(以下「甲」)と、請負者
-        〔会社名〕(以下「乙」)は、下記の工事について請負契約を締結する。
+        発注者 {project.customer.replace(/様?邸?$/, "")} 様(以下「甲」)と、請負者{" "}
+        {contractor.name || "〔会社名〕"}(以下「乙」)は、下記の工事について請負契約を締結する。
       </p>
 
       <table className="mt-4 w-full border-collapse text-[13px]">
@@ -128,19 +130,27 @@ export default function ContractPrintPage({
         </div>
         <div>
           <div className="text-xs font-bold text-ink-600">乙(請負者)署名・記名押印</div>
-          {contracted && project.contract.contractorSignature ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={project.contract.contractorSignature}
-              alt="請負者署名"
-              className="mt-2 h-28 w-full border border-stone-300 object-contain"
-            />
-          ) : (
-            <div className="mt-2 flex h-28 flex-col items-center justify-center gap-1 border border-dashed border-stone-300 text-xs text-stone-400">
-              <span>〔会社名〕</span>
-              <span>〔代表者名〕 ㊞</span>
-            </div>
-          )}
+          <div className="relative mt-2 flex h-28 flex-col justify-center gap-0.5 border border-stone-300 px-3 text-[11px] leading-snug">
+            <span className="font-bold">{contractor.name || "〔会社名〕"}</span>
+            <span className="text-ink-600">{contractor.address || "〔住所〕"}</span>
+            <span>代表者 {contractor.representative || "〔代表者名〕"}</span>
+            {contractor.signature && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={contractor.signature}
+                alt="請負者署名"
+                className="h-8 object-contain object-left"
+              />
+            )}
+            {contractor.sealImage && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={contractor.sealImage}
+                alt="社印"
+                className="absolute right-2 bottom-2 size-14 object-contain"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

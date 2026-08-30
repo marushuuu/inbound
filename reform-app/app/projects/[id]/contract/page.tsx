@@ -28,14 +28,11 @@ export default function ContractPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { updateProject, companySignature, setCompanySignature, ready } = useStore();
+  const { updateProject, company, ready } = useStore();
   const project = useProject(id);
 
   const customerPadRef = useRef<SignaturePadHandle>(null);
-  const companyPadRef = useRef<SignaturePadHandle>(null);
   const [customerHasStroke, setCustomerHasStroke] = useState(false);
-  const [companyHasStroke, setCompanyHasStroke] = useState(false);
-  const [redrawingCompany, setRedrawingCompany] = useState(false);
 
   if (!ready) return <p className="text-sm text-ink-600">読み込み中…</p>;
   if (!project) return <p className="text-sm text-ink-600">案件が見つかりません。</p>;
@@ -44,7 +41,9 @@ export default function ContractPage({
   const contracted = project.status === "contracted";
   const checks = project.contract.checks;
   const allChecked = checks.every(Boolean);
-  const companyEditing = redrawingCompany || !companySignature;
+  // 会社情報は「会社名」が入っていれば契約可能とみなす(署名・印鑑は任意)
+  const companyReady = Boolean(company.name.trim());
+  const contractorProfile = project.contract.contractorProfile ?? company;
 
   const toggleCheck = (i: number) => {
     if (contracted) return;
@@ -53,17 +52,10 @@ export default function ContractPage({
     updateProject(id, { contract: { ...project.contract, checks: next } });
   };
 
-  const saveCompanySignature = () => {
-    if (!companyPadRef.current || companyPadRef.current.isEmpty()) return;
-    setCompanySignature(companyPadRef.current.toDataURL());
-    setRedrawingCompany(false);
-  };
-
-  const canConclude =
-    allChecked && customerHasStroke && Boolean(companySignature) && !companyEditing;
+  const canConclude = allChecked && customerHasStroke && companyReady;
 
   const conclude = () => {
-    if (!canConclude || !customerPadRef.current || !companySignature) return;
+    if (!canConclude || !customerPadRef.current) return;
     updateProject(id, {
       status: "contracted",
       nextAction: project.schedule
@@ -72,7 +64,8 @@ export default function ContractPage({
       contract: {
         ...project.contract,
         signature: customerPadRef.current.toDataURL(),
-        contractorSignature: companySignature,
+        contractorSignature: company.signature,
+        contractorProfile: company,
         contractedAt: new Date().toISOString().slice(0, 10),
       },
     });
@@ -208,75 +201,48 @@ export default function ContractPage({
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <SectionTitle>署名(乙・請負者/自社)</SectionTitle>
-        {contracted ? (
-          project.contract.contractorSignature ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={project.contract.contractorSignature}
-              alt="請負者の署名"
-              className="h-45 w-full rounded-xl border border-stone-200 bg-white object-contain"
-            />
-          ) : (
-            <p className="text-xs text-ink-600">登録なし</p>
-          )
-        ) : companyEditing ? (
-          <>
-            <SignaturePad
-              ref={companyPadRef}
-              onChange={() => setCompanyHasStroke(!companyPadRef.current?.isEmpty())}
-            />
-            <p className="text-xs leading-relaxed text-ink-600">
-              ここで登録した署名は会社の署名として保存され、以降の契約でも自動的に使われます。
-            </p>
-            <div className="flex justify-end gap-2">
-              {companySignature && (
-                <button
-                  type="button"
-                  onClick={() => setRedrawingCompany(false)}
-                  className="min-h-11 px-2 text-[13px] text-ink-700"
-                >
-                  キャンセル
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  companyPadRef.current?.clear();
-                  setCompanyHasStroke(false);
-                }}
-                className="min-h-11 px-2 text-[13px] text-ink-700"
+        <SectionTitle>乙(請負者・自社)</SectionTitle>
+        {companyReady || contracted ? (
+          <Card className="relative flex flex-col gap-1 py-3.5 text-[13px] leading-relaxed">
+            <span className="font-bold">
+              {contractorProfile.name || "〔会社名〕"}
+            </span>
+            <span className="text-ink-600">
+              {contractorProfile.address || "〔住所〕"}
+            </span>
+            <span>代表者 {contractorProfile.representative || "〔代表者名〕"}</span>
+            {contractorProfile.signature && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={contractorProfile.signature}
+                alt="請負者の署名"
+                className="mt-1 h-14 object-contain object-left"
+              />
+            )}
+            {contractorProfile.sealImage && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={contractorProfile.sealImage}
+                alt="社印"
+                className="absolute right-4 bottom-3 size-16 object-contain"
+              />
+            )}
+            {!contracted && (
+              <Link
+                href="/settings"
+                className="mt-1 text-[11px] font-bold text-brand-600 underline"
               >
-                書き直す
-              </button>
-              <button
-                type="button"
-                onClick={saveCompanySignature}
-                disabled={!companyHasStroke}
-                className="min-h-11 rounded-lg bg-brand-500 px-4 text-[13px] font-bold text-white disabled:bg-stone-300"
-              >
-                この署名を登録する
-              </button>
-            </div>
-          </>
+                会社情報を編集する
+              </Link>
+            )}
+          </Card>
         ) : (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={companySignature!}
-              alt="登録済みの請負者署名"
-              className="h-45 w-full rounded-xl border border-stone-200 bg-white object-contain"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setRedrawingCompany(true)}
-                className="min-h-11 px-2 text-[13px] text-ink-700"
-              >
-                署名を登録し直す
-              </button>
-            </div>
-          </>
+          <Link
+            href="/settings"
+            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-note-500/60 bg-note-100 text-[13px] font-bold text-note-700"
+          >
+            会社情報が未登録です — 先に会社情報を登録する
+          </Link>
         )}
       </section>
 

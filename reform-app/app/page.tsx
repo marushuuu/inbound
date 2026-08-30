@@ -46,8 +46,17 @@ export default function ProjectListPage() {
       selectedPattern: "take",
       equipmentChoice: {},
       taskIds: DEFAULT_TASK_IDS,
+      estimateLines: null,
+      siteAddress: "",
+      paymentTerms: "完工後 一括",
       schedule: null,
-      contract: { checks: [false, false, false], signature: null, contractorSignature: null, contractedAt: null },
+      contract: {
+        checks: [false, false, false],
+        signature: null,
+        contractorSignature: null,
+        contractorProfile: null,
+        contractedAt: null,
+      },
     };
     addProject(project);
     setCustomer("");

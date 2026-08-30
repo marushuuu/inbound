@@ -126,6 +126,19 @@ export function IconLock(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconSettings(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path d="M4 21V4a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v17" />
+      <path d="M15 9h4a1 1 0 0 1 1 1v11" />
+      <line x1="2" y1="21" x2="22" y2="21" />
+      <line x1="8" y1="7" x2="11" y2="7" />
+      <line x1="8" y1="11" x2="11" y2="11" />
+      <line x1="8" y1="15" x2="11" y2="15" />
+    </svg>
+  );
+}
+
 export function IconClock(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base(props)}>
