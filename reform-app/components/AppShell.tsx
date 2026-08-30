@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { APP_VERSION } from "@/lib/version";
 import { IconCatalog, IconClock, IconHome, IconSearch, IconSettings } from "./icons";
 
 const NAV = [
@@ -48,7 +49,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="mt-auto p-4 text-xs text-stone-500">
-          MVP プレビュー
+          MVP プレビュー <span className="font-bold text-stone-400">{APP_VERSION}</span>
           <br />
           データは端末内に保存されます
         </div>
@@ -59,7 +60,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <header className="flex h-12 items-center justify-between bg-brand-500 px-4 text-white print:hidden lg:hidden">
           <span className="text-base font-bold tracking-wide">リフォーム営業</span>
           <span className="rounded-full bg-note-500 px-2 py-0.5 text-xs font-bold text-ink-900">
-            MVP
+            {APP_VERSION}
           </span>
         </header>
 

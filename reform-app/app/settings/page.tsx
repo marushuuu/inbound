@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import SignaturePad, { type SignaturePadHandle } from "@/components/SignaturePad";
 import { Card, PageHeader, SectionTitle } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import { APP_VERSION, VERSION_NOTES } from "@/lib/version";
 
 /** 画像ファイルを縮小して data URL 化する(localStorage の容量を圧迫しないため) */
 function fileToDataUrl(file: File, maxPx = 400): Promise<string> {
@@ -172,6 +173,22 @@ export default function SettingsPage() {
             </div>
           </>
         )}
+      </Card>
+
+      {/* このアプリの版数(手元のビルドが最新か確認するため) */}
+      <Card className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <SectionTitle>アプリのバージョン</SectionTitle>
+          <span className="rounded-md bg-brand-500 px-2 py-0.5 text-xs font-bold text-white">
+            {APP_VERSION}
+          </span>
+        </div>
+        <p className="text-xs text-ink-600">この版で入った変更:</p>
+        <ul className="list-disc pl-5 text-xs leading-relaxed text-ink-700">
+          {VERSION_NOTES.map((n) => (
+            <li key={n}>{n}</li>
+          ))}
+        </ul>
       </Card>
 
       {/* 契約書での見え方プレビュー */}
