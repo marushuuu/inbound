@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import SignaturePad, { type SignaturePadHandle } from "@/components/SignaturePad";
+import { useState } from "react";
 import { Card, PageHeader, SectionTitle } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { APP_VERSION, VERSION_NOTES } from "@/lib/version";
@@ -30,14 +29,9 @@ function fileToDataUrl(file: File, maxPx = 400): Promise<string> {
 
 export default function SettingsPage() {
   const { company, updateCompany, ready } = useStore();
-  const padRef = useRef<SignaturePadHandle>(null);
-  const [hasStroke, setHasStroke] = useState(false);
-  const [redrawing, setRedrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!ready) return <p className="text-sm text-ink-600">読み込み中…</p>;
-
-  const signatureEditing = redrawing || !company.signature;
 
   const onSealSelected = async (file: File | undefined) => {
     if (!file) return;
@@ -112,69 +106,6 @@ export default function SettingsPage() {
         {error && <p className="text-xs font-bold text-note-700">{error}</p>}
       </Card>
 
-      <Card className="flex flex-col gap-3">
-        <SectionTitle>代表者の署名</SectionTitle>
-        {signatureEditing ? (
-          <>
-            <SignaturePad
-              ref={padRef}
-              onChange={() => setHasStroke(!padRef.current?.isEmpty())}
-            />
-            <div className="flex justify-end gap-2">
-              {company.signature && (
-                <button
-                  type="button"
-                  onClick={() => setRedrawing(false)}
-                  className="min-h-11 px-2 text-[13px] text-ink-700"
-                >
-                  キャンセル
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  padRef.current?.clear();
-                  setHasStroke(false);
-                }}
-                className="min-h-11 px-2 text-[13px] text-ink-700"
-              >
-                書き直す
-              </button>
-              <button
-                type="button"
-                disabled={!hasStroke}
-                onClick={() => {
-                  if (!padRef.current || padRef.current.isEmpty()) return;
-                  updateCompany({ signature: padRef.current.toDataURL() });
-                  setRedrawing(false);
-                }}
-                className="min-h-11 rounded-lg bg-brand-500 px-4 text-[13px] font-bold text-white disabled:bg-stone-300"
-              >
-                署名を登録する
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={company.signature!}
-              alt="登録済みの署名"
-              className="h-32 w-full rounded-xl border border-stone-200 bg-white object-contain"
-            />
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setRedrawing(true)}
-                className="min-h-11 px-2 text-[13px] text-ink-700"
-              >
-                署名を登録し直す
-              </button>
-            </div>
-          </>
-        )}
-      </Card>
-
       {/* このアプリの版数(手元のビルドが最新か確認するため) */}
       <Card className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -201,14 +132,6 @@ export default function SettingsPage() {
           <div className="mt-1">
             代表者 {company.representative || "〔代表者名〕"}
           </div>
-          {company.signature && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={company.signature}
-              alt="署名"
-              className="mt-1 h-12 object-contain object-left"
-            />
-          )}
           {company.sealImage && (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img

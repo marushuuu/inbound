@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { use } from "react";
-import { IconAlert, IconPlus, IconSearch } from "@/components/icons";
+import { IconAlert, IconDoc, IconPlus, IconSearch } from "@/components/icons";
 import {
   Card,
   Chip,
@@ -86,6 +86,15 @@ export default function HearingPage({
         },
       ],
     });
+
+  /** ヒアリング内容をそのまま見積作成へ持ち込む(過去見積の検索を挟まないルート) */
+  const goEstimate = () => {
+    updateProject(id, {
+      status: project.status === "contracted" ? project.status : "estimating",
+      nextAction: "見積作成中",
+    });
+    router.push(`/projects/${id}/estimate`);
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -266,10 +275,20 @@ export default function HearingPage({
         />
       </section>
 
-      <PrimaryButton onClick={() => router.push(`/search?project=${id}`)}>
-        <IconSearch width={18} height={18} />
-        類似の過去見積を検索
-      </PrimaryButton>
+      <div className="flex flex-col gap-2.5">
+        <PrimaryButton onClick={goEstimate}>
+          <IconDoc width={18} height={18} />
+          見積に進む
+        </PrimaryButton>
+        <button
+          type="button"
+          onClick={() => router.push(`/search?project=${id}`)}
+          className="flex min-h-13 w-full items-center justify-center gap-2 rounded-xl border border-brand-500 bg-white text-base font-bold text-brand-600 hover:bg-brand-50"
+        >
+          <IconSearch width={18} height={18} />
+          類似の過去見積を検索
+        </button>
+      </div>
     </div>
   );
 }

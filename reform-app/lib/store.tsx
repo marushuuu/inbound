@@ -22,8 +22,6 @@ import {
 const STORAGE_KEY = "reform-app.projects.v1";
 const WORKS_KEY = "reform-app.works.v2";
 const COMPANY_KEY = "reform-app.company.v1";
-/** 旧バージョン(手書き署名のみ)のキー。会社情報へ引き継ぐ */
-const LEGACY_SIGNATURE_KEY = "reform-app.companySignature.v1";
 
 /** 旧形式(yearMonth: "YYYY-MM")の履歴レコードを year/month 独立形式へ移行する */
 function normalizeHistoryRecord(r: unknown, i: number): HistoryRecord {
@@ -86,9 +84,23 @@ function normalizeProject(p: Project): Project {
     schedule: p.schedule ?? null,
     contract: {
       ...p.contract,
-      contractorSignature: p.contract?.contractorSignature ?? null,
       contractorProfile: p.contract?.contractorProfile ?? null,
     },
+  };
+}
+
+/**
+ * 保存済みの会社情報を現行の形式に整える。
+ * 旧バージョンにあった signature(代表者署名)は廃止したため読み捨てる。
+ */
+function normalizeCompany(saved: unknown): CompanyProfile {
+  const raw = (saved ?? {}) as Record<string, unknown>;
+  const str = (v: unknown) => (typeof v === "string" ? v : "");
+  return {
+    name: str(raw.name),
+    address: str(raw.address),
+    representative: str(raw.representative),
+    sealImage: typeof raw.sealImage === "string" ? raw.sealImage : null,
   };
 }
 
@@ -143,13 +155,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (rawWorks) setWorks(mergeWorks(JSON.parse(rawWorks)));
 
       const rawCompany = window.localStorage.getItem(COMPANY_KEY);
-      if (rawCompany) {
-        setCompany({ ...EMPTY_COMPANY_PROFILE, ...JSON.parse(rawCompany) });
-      } else {
-        // 旧バージョンで登録済みの手書き署名があれば引き継ぐ
-        const legacy = window.localStorage.getItem(LEGACY_SIGNATURE_KEY);
-        if (legacy) setCompany({ ...EMPTY_COMPANY_PROFILE, signature: legacy });
-      }
+      if (rawCompany) setCompany(normalizeCompany(JSON.parse(rawCompany)));
     } catch {
       // 保存データが読めない場合はシードデータのまま続行
     }

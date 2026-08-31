@@ -129,19 +129,11 @@ export default function ContractPrintPage({
           )}
         </div>
         <div>
-          <div className="text-xs font-bold text-ink-600">乙(請負者)署名・記名押印</div>
+          <div className="text-xs font-bold text-ink-600">乙(請負者)記名押印</div>
           <div className="relative mt-2 flex h-28 flex-col justify-center gap-0.5 border border-stone-300 px-3 text-[11px] leading-snug">
             <span className="font-bold">{contractor.name || "〔会社名〕"}</span>
             <span className="text-ink-600">{contractor.address || "〔住所〕"}</span>
             <span>代表者 {contractor.representative || "〔代表者名〕"}</span>
-            {contractor.signature && (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={contractor.signature}
-                alt="請負者署名"
-                className="h-8 object-contain object-left"
-              />
-            )}
             {contractor.sealImage && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img

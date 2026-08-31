@@ -171,7 +171,6 @@ export const SEED_PROJECTS: Project[] = [
     contract: {
       checks: [false, false, false],
       signature: null,
-      contractorSignature: null,
       contractorProfile: null,
       contractedAt: null,
     },
@@ -201,7 +200,6 @@ export const SEED_PROJECTS: Project[] = [
     contract: {
       checks: [false, false, false],
       signature: null,
-      contractorSignature: null,
       contractorProfile: null,
       contractedAt: null,
     },
@@ -231,7 +229,6 @@ export const SEED_PROJECTS: Project[] = [
     contract: {
       checks: [true, true, true],
       signature: null,
-      contractorSignature: null,
       contractorProfile: null,
       contractedAt: "2026-08-24",
     },
@@ -261,7 +258,6 @@ export const SEED_PROJECTS: Project[] = [
     contract: {
       checks: [false, false, false],
       signature: null,
-      contractorSignature: null,
       contractorProfile: null,
       contractedAt: null,
     },

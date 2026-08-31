@@ -2,7 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Card, Chip, PageHeader } from "@/components/ui";
+import { IconDoc } from "@/components/icons";
+import { Card, Chip, PageHeader, PrimaryButton } from "@/components/ui";
 import { yen } from "@/lib/calc";
 import { PAST_ESTIMATES } from "@/lib/data";
 import { SIMILARITY_MAX_SCORE, inferBuiltAge, inferWorkType, scoreSimilarity } from "@/lib/similarity";
@@ -38,8 +39,15 @@ export default function SearchClient() {
         .sort((a, b) => b.similarity.score - a.similarity.score)
     : filtered.map((e) => ({ estimate: e, similarity: null }));
 
-  const useAsBase = () => {
-    if (!project) return;
+  /**
+   * 見積画面へ進む。過去見積を1件も選んでいなくても呼べる(その場合は空の見積から作成)。
+   * 案件の紐付けが無い場合は案件一覧へ戻すだけでエラーにはしない。
+   */
+  const goEstimate = () => {
+    if (!project) {
+      router.push("/");
+      return;
+    }
     updateProject(project.id, { status: "estimating", nextAction: "見積作成中" });
     router.push(`/projects/${project.id}/estimate`);
   };
@@ -114,7 +122,7 @@ export default function SearchClient() {
             {project && (
               <button
                 type="button"
-                onClick={useAsBase}
+                onClick={goEstimate}
                 className="mt-1 min-h-11 rounded-lg border border-brand-500 text-[13px] font-bold text-brand-600 hover:bg-brand-50"
               >
                 この見積をベースに作成
@@ -122,6 +130,19 @@ export default function SearchClient() {
             )}
           </Card>
         ))}
+      </div>
+
+      {/* 過去見積を選ばなくても見積作成へ進めるようにする */}
+      <div className="flex flex-col gap-2">
+        <PrimaryButton onClick={goEstimate}>
+          <IconDoc width={18} height={18} />
+          {project ? "見積に進む" : "案件一覧へ戻る"}
+        </PrimaryButton>
+        <p className="text-center text-xs text-ink-600">
+          {project
+            ? "過去見積を選ばずに、そのまま見積を作成することもできます"
+            : "案件のヒアリング画面から検索すると、その案件の見積作成へ進めます"}
+        </p>
       </div>
     </div>
   );

@@ -53,7 +53,6 @@ export default function ProjectListPage() {
       contract: {
         checks: [false, false, false],
         signature: null,
-        contractorSignature: null,
         contractorProfile: null,
         contractedAt: null,
       },

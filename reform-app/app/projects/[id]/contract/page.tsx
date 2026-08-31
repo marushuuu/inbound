@@ -41,7 +41,7 @@ export default function ContractPage({
   const contracted = project.status === "contracted";
   const checks = project.contract.checks;
   const allChecked = checks.every(Boolean);
-  // 会社情報は「会社名」が入っていれば契約可能とみなす(署名・印鑑は任意)
+  // 会社情報は「会社名」が入っていれば契約可能とみなす(印鑑画像は任意)
   const companyReady = Boolean(company.name.trim());
   const contractorProfile = project.contract.contractorProfile ?? company;
 
@@ -64,7 +64,6 @@ export default function ContractPage({
       contract: {
         ...project.contract,
         signature: customerPadRef.current.toDataURL(),
-        contractorSignature: company.signature,
         contractorProfile: company,
         contractedAt: new Date().toISOString().slice(0, 10),
       },
@@ -211,14 +210,6 @@ export default function ContractPage({
               {contractorProfile.address || "〔住所〕"}
             </span>
             <span>代表者 {contractorProfile.representative || "〔代表者名〕"}</span>
-            {contractorProfile.signature && (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={contractorProfile.signature}
-                alt="請負者の署名"
-                className="mt-1 h-14 object-contain object-left"
-              />
-            )}
             {contractorProfile.sealImage && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img

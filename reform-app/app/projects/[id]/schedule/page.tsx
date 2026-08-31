@@ -13,6 +13,8 @@ import {
   formatDateJa,
   minToTime,
   todayISO,
+  workerCandidates,
+  workerForTrade,
 } from "@/lib/schedule";
 import { WORKERS, demoBusyFor } from "@/lib/workers";
 import { useProject, useStore } from "@/lib/store";
@@ -34,9 +36,11 @@ export default function SchedulePage({
   const project = useProject(id);
 
   const [slotMin, setSlotMin] = useState(30);
-  // 初期表示日は翌日。カレンダー入力またはグリッドのドラッグで変更できる。
+  // 初期表示日は翌日。日付は矢印ボタン(◀▶)で前後に動かす。
   const [date, setDate] = useState<string>(() => addDays(todayISO(), 1));
   const [startMin, setStartMin] = useState(DAY_START);
+  /** 工事項目ID -> 担当者ID。未指定の項目は職種の既定担当者に割り付ける */
+  const [assignments, setAssignments] = useState<Record<string, string>>({});
   const [dragging, setDragging] = useState(false);
   const [google, setGoogle] = useState<GoogleStatus>({ enabled: false, connected: [] });
   const [liveBusy, setLiveBusy] = useState<{
@@ -125,7 +129,12 @@ export default function SchedulePage({
 
   const busyByWorker: Record<string, BusyBlock[]> = {};
   for (const w of WORKERS) busyByWorker[w.id] = busyFor(w.id, date);
-  const allocation: ScheduledTask[] | null = allocateDay(tasks, busyByWorker, startMin);
+  const allocation: ScheduledTask[] | null = allocateDay(
+    tasks,
+    busyByWorker,
+    startMin,
+    assignments,
+  );
 
   const rows = (24 * 60) / slotMin;
   const rowOf = (min: number) => Math.floor(min / slotMin) + 1;
@@ -260,32 +269,62 @@ export default function SchedulePage({
         })}
       </Card>
 
-      {/* 施工日の選択 */}
-      <Card className="flex items-center gap-2 py-3">
-        <label className="w-16 shrink-0 text-[13px] text-ink-600">施工日</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => e.target.value && setDate(e.target.value)}
-          className="min-h-11 flex-1 rounded-lg border border-stone-300 px-3 text-sm focus:border-brand-500 focus:outline-none"
-        />
-      </Card>
+      {/* 工事項目ごとの担当者(職種の既定以外も選べる) */}
+      {tasks.length > 0 && (
+        <Card className="flex flex-col gap-2 py-3">
+          <div className="text-[13px] font-bold">担当者の割り当て</div>
+          {tasks.map((t) => (
+            <div key={t.id} className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-[13px]">
+                {t.name}
+                <span className="pl-1.5 text-xs text-ink-600">{t.trade}</span>
+              </span>
+              <select
+                value={assignments[t.id] ?? ""}
+                onChange={(e) =>
+                  setAssignments((prev) => {
+                    const next = { ...prev };
+                    if (e.target.value) next[t.id] = e.target.value;
+                    else delete next[t.id];
+                    return next;
+                  })
+                }
+                className="min-h-11 w-44 rounded-lg border border-stone-300 px-2 text-[13px] focus:border-brand-500 focus:outline-none"
+              >
+                <option value="">既定({workerForTrade(t.trade)?.name ?? "未割当"})</option>
+                {workerCandidates(t.trade).map(({ worker, recommended }) => (
+                  <option key={worker.id} value={worker.id}>
+                    {worker.name}
+                    {recommended ? "(推奨)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </Card>
+      )}
 
       {/* タイムグリッド(ドラッグで開始時刻を指定) */}
       <Card className="p-3">
+        {/* 施工日の変更は矢印ボタンのみ(日付ピッカーは使わない) */}
         <div className="flex items-center justify-between pb-2">
           <button
             type="button"
+            aria-label="前日"
             onClick={() => setDate(addDays(date, -1))}
-            className="min-h-11 min-w-11 text-ink-600"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-stone-300 text-ink-700 hover:border-brand-400"
           >
             ◀
           </button>
-          <span className="text-sm font-bold">{formatDateJa(date)}</span>
+          <div className="text-center">
+            <div className="text-sm font-bold">{formatDateJa(date)}</div>
+            <div className="text-[10px] text-ink-600">矢印で施工日を変更</div>
+          </div>
           <button
             type="button"
+            aria-label="翌日"
             onClick={() => setDate(addDays(date, 1))}
-            className="min-h-11 min-w-11 text-ink-600"
+            className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-stone-300 text-ink-700 hover:border-brand-400"
           >
             ▶
           </button>

@@ -63,8 +63,6 @@ export interface ContractState {
   checks: [boolean, boolean, boolean];
   /** 発注者(お客様)の署名 */
   signature: string | null;
-  /** 請負者(自社)の署名。締結時点の会社署名のコピーを保持する */
-  contractorSignature: string | null;
   /** 締結時点の会社情報のスナップショット(後で会社情報を変えても過去契約は不変) */
   contractorProfile: CompanyProfile | null;
   contractedAt: string | null;
@@ -111,10 +109,8 @@ export interface CompanyProfile {
   name: string;
   address: string;
   representative: string;
-  /** 印鑑画像(data URL) */
+  /** 印鑑画像(社印。data URL) */
   sealImage: string | null;
-  /** 手書き署名(data URL) */
-  signature: string | null;
 }
 
 export const EMPTY_COMPANY_PROFILE: CompanyProfile = {
@@ -122,7 +118,6 @@ export const EMPTY_COMPANY_PROFILE: CompanyProfile = {
   address: "",
   representative: "",
   sealImage: null,
-  signature: null,
 };
 
 export interface Worker {
