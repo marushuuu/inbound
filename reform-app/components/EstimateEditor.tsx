@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { lineAmount, yen } from "@/lib/calc";
+import { lineAmount, lineCost, yen } from "@/lib/calc";
 import { SECTION_ORDER, UNIT_OPTIONS } from "@/lib/workmaster";
 import type { EstimateLine, WorkItem } from "@/lib/types";
 import { IconPlus } from "./icons";
@@ -20,6 +20,19 @@ function groupBySection(lines: EstimateLine[]) {
     const bi = SECTION_ORDER.indexOf(b[0]);
     return (ai < 0 ? SECTION_ORDER.length : ai) - (bi < 0 ? SECTION_ORDER.length : bi);
   });
+}
+
+/** 売価と原価から粗利率の表示文字列を作る(売価0なら "-") */
+function marginPercent(price: number, cost: number): string {
+  if (price <= 0) return "-";
+  return `${(((price - cost) / price) * 100).toFixed(0)}%`;
+}
+
+/** 明細1行の粗利額と粗利率のラベル */
+function lineMarginLabel(line: EstimateLine): string {
+  const amount = lineAmount(line);
+  const profit = amount - lineCost(line);
+  return `${yen(profit)}(${marginPercent(amount, lineCost(line))})`;
 }
 
 export default function EstimateEditor({
@@ -53,6 +66,7 @@ export default function EstimateEditor({
         quantity: 1,
         unit: item.unit,
         unitPrice: item.unitPrice,
+        costUnitPrice: item.costPrice,
         workItemId: item.id,
       },
     ]);
@@ -70,11 +84,13 @@ export default function EstimateEditor({
         quantity: 1,
         unit: "式",
         unitPrice: 0,
+        costUnitPrice: 0,
       },
     ]);
 
   const grouped = groupBySection(lines);
   const subtotal = lines.reduce((s, l) => s + lineAmount(l), 0);
+  const costTotal = lines.reduce((s, l) => s + lineCost(l), 0);
   const masterByCategory = groupWorks(works);
 
   return (
@@ -158,6 +174,26 @@ export default function EstimateEditor({
                   {yen(lineAmount(line))}
                 </span>
               </div>
+              {/* 原価(社内用)。売価との差がこの行の粗利になる */}
+              <div className="flex items-center gap-1.5 rounded-lg bg-stone-100 px-2 py-1.5">
+                <span className="text-xs text-ink-600">原価</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={line.costUnitPrice.toLocaleString("ja-JP")}
+                  onChange={(e) =>
+                    update(line.id, {
+                      costUnitPrice: Number(e.target.value.replace(/[^0-9]/g, "")) || 0,
+                    })
+                  }
+                  aria-label="原価単価"
+                  className="min-h-10 min-w-0 flex-1 rounded-md border border-stone-300 bg-white px-2 text-right text-[13px] focus:border-brand-500 focus:outline-none"
+                />
+                <span className="text-xs text-ink-600">円/{line.unit}</span>
+                <span className="w-24 shrink-0 text-right text-[13px] font-bold text-ink-700">
+                  粗利 {lineMarginLabel(line)}
+                </span>
+              </div>
             </Card>
           ))}
         </div>
@@ -166,6 +202,10 @@ export default function EstimateEditor({
       <div className="flex items-center justify-between border-t border-stone-300 pt-2.5">
         <span className="text-[13px] font-bold">工事費 小計</span>
         <span className="text-[15px] font-bold">{yen(subtotal)}</span>
+      </div>
+      <div className="flex items-center justify-between text-[13px] text-ink-600">
+        <span>うち原価</span>
+        <span className="font-medium">{yen(costTotal)}</span>
       </div>
 
       <div className="flex gap-2">
@@ -221,7 +261,8 @@ export default function EstimateEditor({
                           {item.name}
                         </span>
                         <span className="text-[11px] text-ink-600">
-                          {item.trade}・{item.durationMinutes}分
+                          {item.trade}・{item.durationMinutes}分・粗利
+                          {marginPercent(item.unitPrice, item.costPrice)}
                         </span>
                       </span>
                       <span className="shrink-0 text-[13px] font-bold">

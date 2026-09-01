@@ -19,6 +19,11 @@ export function lineAmount(line: EstimateLine): number {
   return Math.round(line.quantity * line.unitPrice);
 }
 
+/** 明細行の原価(数量 × 原価単価) */
+export function lineCost(line: EstimateLine): number {
+  return Math.round(line.quantity * (line.costUnitPrice ?? 0));
+}
+
 /** パターン×案件の設備差し替えを解決して、そのパターンの設備商品IDを返す */
 export function resolveEquipment(
   project: Project,
@@ -53,6 +58,12 @@ export interface EstimateTotals {
   total: number;
   /** 自作見積の明細を使ったか(false ならサンプル見積) */
   custom: boolean;
+  /** 原価合計(工事+設備)。受注時粗利の計算に使う */
+  cost: number;
+  /** 受注時粗利額 = 税抜提示額 − 原価合計 */
+  grossProfit: number;
+  /** 受注時粗利率(%)。税抜提示額が0のときは0 */
+  marginRate: number;
 }
 
 export function calcPattern(project: Project, pattern: PatternKey): EstimateTotals {
@@ -65,6 +76,7 @@ export function calcPattern(project: Project, pattern: PatternKey): EstimateTota
         name: l.name,
         spec: l.spec || undefined,
         amount: lineAmount(l),
+        cost: lineCost(l),
         quantity: l.quantity,
         unit: l.unit,
         unitPrice: l.unitPrice,
@@ -84,6 +96,7 @@ export function calcPattern(project: Project, pattern: PatternKey): EstimateTota
       name: product ? `${product.maker} ${product.name}` : "住宅設備",
       spec: product?.model,
       amount: e.amount,
+      cost: product?.costPrice ?? 0,
       quantity: 1,
       unit: "式",
       unitPrice: e.amount,
@@ -114,6 +127,13 @@ export function calcPattern(project: Project, pattern: PatternKey): EstimateTota
   const discount = beforeDiscount % 10000;
   const taxable = beforeDiscount - discount;
   const tax = Math.round(taxable * TAX_RATE);
+
+  // 受注時粗利: 値引き後の税抜提示額から原価合計を引く。
+  // 諸経費は売上に乗せる項目なので原価には含めない(値引きはそのまま粗利を削る)。
+  const cost = allLines.reduce((s, l) => s + (l.cost ?? 0), 0);
+  const grossProfit = taxable - cost;
+  const marginRate = taxable > 0 ? (grossProfit / taxable) * 100 : 0;
+
   return {
     sections,
     detail,
@@ -125,5 +145,8 @@ export function calcPattern(project: Project, pattern: PatternKey): EstimateTota
     tax,
     total: taxable + tax,
     custom,
+    cost,
+    grossProfit,
+    marginRate,
   };
 }

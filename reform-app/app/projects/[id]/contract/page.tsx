@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { use, useRef, useState } from "react";
 import { IconCheck, IconDoc, IconLock } from "@/components/icons";
+import { LostReasonPanel } from "@/components/LostReasonForm";
 import SignaturePad, { type SignaturePadHandle } from "@/components/SignaturePad";
 import {
   Card,
@@ -250,6 +251,7 @@ export default function ContractPage({
           </p>
         </div>
       )}
+      <LostReasonPanel project={project} />
     </div>
   );
 }

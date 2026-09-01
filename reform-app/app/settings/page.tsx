@@ -106,6 +106,32 @@ export default function SettingsPage() {
         {error && <p className="text-xs font-bold text-note-700">{error}</p>}
       </Card>
 
+      <Card className="flex flex-col gap-3">
+        <SectionTitle>受注時粗利の目標</SectionTitle>
+        <p className="text-xs leading-relaxed text-ink-600">
+          見積画面で、この値を下回ると警告が出ます。業界の目安は契約時34〜35%ですが、
+          会社ごとの実態に合わせて設定してください。
+        </p>
+        <label className="flex items-center gap-2">
+          <span className="text-[13px] text-ink-600">目標粗利率</span>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={0}
+            max={100}
+            step={0.5}
+            value={company.targetMarginRate}
+            onChange={(e) =>
+              updateCompany({
+                targetMarginRate: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+              })
+            }
+            className="min-h-11 w-24 rounded-lg border border-stone-300 px-3 text-right text-sm font-bold focus:border-brand-500 focus:outline-none"
+          />
+          <span className="text-[13px] text-ink-600">%</span>
+        </label>
+      </Card>
+
       {/* このアプリの版数(手元のビルドが最新か確認するため) */}
       <Card className="flex flex-col gap-2">
         <div className="flex items-center justify-between">

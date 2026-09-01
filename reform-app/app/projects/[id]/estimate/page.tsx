@@ -12,6 +12,7 @@ import {
   IconVanity,
 } from "@/components/icons";
 import EstimateEditor from "@/components/EstimateEditor";
+import { LostReasonPanel } from "@/components/LostReasonForm";
 import {
   Card,
   PageHeader,
@@ -36,7 +37,7 @@ export default function EstimatePage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { updateProject, works, ready } = useStore();
+  const { updateProject, works, company, ready } = useStore();
   const project = useProject(id);
   const [gradeModal, setGradeModal] = useState<EquipmentCategory | null>(null);
   const [editing, setEditing] = useState(false);
@@ -47,6 +48,13 @@ export default function EstimatePage({
   const pattern = project.selectedPattern;
   const totals = calcPattern(project, pattern);
   const custom = project.estimateLines !== null;
+  // 受注時粗利の目標(会社情報で設定)と、目標に届くまでに必要な追加粗利額
+  const target = company.targetMarginRate;
+  const marginOk = totals.marginRate >= target;
+  const shortfall = Math.max(
+    0,
+    Math.round((target / 100) * totals.taxable - totals.grossProfit),
+  );
 
   /** サンプル見積の明細を編集可能な形にコピーして自作見積へ切り替える */
   const startEditing = () => {
@@ -59,6 +67,7 @@ export default function EstimatePage({
         quantity: 1,
         unit: "式",
         unitPrice: l.amount,
+        costUnitPrice: l.cost ?? 0,
       }));
       updateProject(id, { estimateLines: seeded });
     }
@@ -139,6 +148,15 @@ export default function EstimatePage({
                 className={`text-sm font-bold ${active ? "text-brand-600" : ""}`}
               >
                 {yen(t.total)}
+              </span>
+              <span
+                className={`text-[11px] font-bold ${
+                  t.marginRate >= company.targetMarginRate
+                    ? "text-ink-600"
+                    : "text-note-700"
+                }`}
+              >
+                粗利 {t.marginRate.toFixed(1)}%
               </span>
             </button>
           );
@@ -289,6 +307,57 @@ export default function EstimatePage({
         </div>
       </Card>
 
+      {/* 受注時粗利(社内用)。見積書PDFには出力しない */}
+      <Card className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <SectionTitle>受注時粗利(社内用)</SectionTitle>
+          <span
+            className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+              marginOk ? "bg-brand-500 text-white" : "bg-note-500 text-ink-900"
+            }`}
+          >
+            {totals.marginRate.toFixed(1)}%
+          </span>
+        </div>
+        <div className="flex justify-between border-t border-stone-100 pt-2 text-[13px]">
+          <span className="text-ink-600">売上(税抜・値引き後)</span>
+          <span className="font-medium">{yen(totals.taxable)}</span>
+        </div>
+        <div className="flex justify-between text-[13px]">
+          <span className="text-ink-600">原価合計</span>
+          <span className="font-medium">{yen(totals.cost)}</span>
+        </div>
+        <div className="flex justify-between text-[13px]">
+          <span className="text-ink-600">粗利額</span>
+          <span className="font-bold">{yen(totals.grossProfit)}</span>
+        </div>
+        {/* 目標に対する達成度をバーで示す */}
+        <div className="h-2 overflow-hidden rounded-full bg-stone-200">
+          <div
+            className={`h-full rounded-full ${marginOk ? "bg-brand-500" : "bg-note-500"}`}
+            style={{
+              width: `${Math.min(100, Math.max(0, (totals.marginRate / target) * 100))}%`,
+            }}
+          />
+        </div>
+        <p
+          className={`text-xs leading-relaxed ${
+            marginOk ? "text-ink-600" : "font-bold text-note-700"
+          }`}
+        >
+          {marginOk
+            ? `目標 ${target}% を満たしています。`
+            : `目標 ${target}% に対して ${(target - totals.marginRate).toFixed(1)}pt 不足しています(あと ${yen(shortfall)})。`}
+        </p>
+        <p className="text-[11px] leading-relaxed text-ink-600">
+          この数字は社内用です。見積書PDF・契約書には出力されません。目標値は
+          <Link href="/settings" className="px-1 font-bold text-brand-600 underline">
+            会社情報
+          </Link>
+          で変更できます。
+        </p>
+      </Card>
+
       {project.hearing.riskMemo && (
         <div className="flex gap-2 rounded-xl border border-note-500/40 bg-note-100/60 p-3.5">
           <IconAlert
@@ -312,6 +381,8 @@ export default function EstimatePage({
           見積書PDFを出力
         </Link>
       </div>
+
+      <LostReasonPanel project={project} />
 
       {/* グレード選択モーダル */}
       {gradeModal && (
@@ -376,7 +447,12 @@ export default function EstimatePage({
                         <span className="text-xs text-ink-600">
                           {p.gradeLabel}｜{p.features.join("・")}
                         </span>
-                        <span className="text-sm font-bold">{yen(p.price)}</span>
+                        <span className="text-sm font-bold">
+                          {yen(p.price)}
+                          <span className="pl-1.5 text-[11px] font-normal text-ink-600">
+                            粗利 {((1 - p.costPrice / p.price) * 100).toFixed(0)}%
+                          </span>
+                        </span>
                       </div>
                     </button>
                   );

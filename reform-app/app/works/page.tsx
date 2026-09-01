@@ -5,6 +5,12 @@ import { yen } from "@/lib/calc";
 import { DEFAULT_TASK_IDS, SECTION_ORDER } from "@/lib/workmaster";
 import { useStore } from "@/lib/store";
 
+/** 売価と原価から粗利率の表示文字列を作る(売価0なら "-") */
+function marginPercent(price: number, cost: number): string {
+  if (price <= 0) return "-";
+  return `${(((price - cost) / price) * 100).toFixed(0)}%`;
+}
+
 export default function WorkMasterPage() {
   const { works, updateWork, ready } = useStore();
 
@@ -23,11 +29,11 @@ export default function WorkMasterPage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title="工事マスタ"
-        subtitle="工事項目ごとの所要時間(分)と標準単価(円)を設定"
+        subtitle="工事項目ごとの所要時間(分)・標準単価・標準原価(円)を設定"
       />
 
       <div className="rounded-xl border border-brand-200 bg-brand-50 p-3.5 text-xs leading-relaxed text-brand-800">
-        ここで設定した所要時間は施工日程の自動割付に、単価は見積作成時の初期値に使われます。変更は即保存されます。
+        ここで設定した所要時間は施工日程の自動割付に、単価・原価は見積作成時の初期値に使われます。単価と原価の差が受注時粗利になります。変更は即保存されます。
       </div>
 
       {categories.map((category) => (
@@ -86,6 +92,27 @@ export default function WorkMasterPage() {
                       <span className="text-xs text-ink-600">円/{w.unit}</span>
                     </label>
                   </div>
+                  <div className="flex items-center gap-3 rounded-lg bg-stone-100 px-2 py-1.5">
+                    <label className="flex flex-1 items-center gap-1.5">
+                      <span className="text-xs text-ink-600">原価</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={w.costPrice.toLocaleString("ja-JP")}
+                        onChange={(e) =>
+                          updateWork(w.id, {
+                            costPrice: Number(e.target.value.replace(/[^0-9]/g, "")) || 0,
+                          })
+                        }
+                        aria-label={`${w.name}の標準原価`}
+                        className="min-h-10 min-w-0 flex-1 rounded-md border border-stone-300 bg-white px-2.5 text-right text-[13px] font-bold focus:border-brand-500 focus:outline-none"
+                      />
+                      <span className="text-xs text-ink-600">円/{w.unit}</span>
+                    </label>
+                    <span className="shrink-0 text-[13px] font-bold text-ink-700">
+                      粗利 {marginPercent(w.unitPrice, w.costPrice)}
+                    </span>
+                  </div>
                 </div>
               ))}
           </Card>
@@ -102,6 +129,7 @@ export default function WorkMasterPage() {
 
       <p className="text-center text-xs text-ink-600">
         参考: 標準単価の合計 {yen(works.reduce((s, w) => s + w.unitPrice, 0))}
+        ／標準原価の合計 {yen(works.reduce((s, w) => s + w.costPrice, 0))}
       </p>
     </div>
   );

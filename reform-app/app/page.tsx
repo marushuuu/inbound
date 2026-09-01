@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { IconCalendar, IconPlus } from "@/components/icons";
+import { lostSummary } from "@/components/LostReasonForm";
 import { Card, StatusBadge, STATUS_LABEL } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { DEFAULT_TASK_IDS } from "@/lib/workmaster";
@@ -14,6 +15,7 @@ const FILTERS: (ProjectStatus | "all")[] = [
   "hearing",
   "presented",
   "contracted",
+  "lost",
 ];
 
 export default function ProjectListPage() {
@@ -56,6 +58,7 @@ export default function ProjectListPage() {
         contractorProfile: null,
         contractedAt: null,
       },
+      lost: null,
     };
     addProject(project);
     setCustomer("");
@@ -152,10 +155,21 @@ export default function ProjectListPage() {
                   {p.workTitle}｜{p.meta}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[13px] font-medium text-brand-600">
-                <IconCalendar width={15} height={15} />
-                {p.nextAction}
-              </div>
+              {p.lost ? (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] font-bold text-ink-700">
+                    {lostSummary(p.lost)}
+                  </span>
+                  {p.lost.note && (
+                    <span className="text-xs text-ink-600">{p.lost.note}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[13px] font-medium text-brand-600">
+                  <IconCalendar width={15} height={15} />
+                  {p.nextAction}
+                </div>
+              )}
             </Card>
           </Link>
         ))}

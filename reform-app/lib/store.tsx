@@ -11,8 +11,10 @@ import {
 import { SEED_PROJECTS } from "./data";
 import { DEFAULT_TASK_IDS, WORK_ITEMS } from "./workmaster";
 import {
+  DEFAULT_TARGET_MARGIN_RATE,
   EMPTY_COMPANY_PROFILE,
   type CompanyProfile,
+  type EstimateLine,
   type Hearing,
   type HistoryRecord,
   type Project,
@@ -72,13 +74,20 @@ function normalizeHearing(h: unknown): Hearing {
   };
 }
 
+/** 原価を持たない旧形式の見積明細に costUnitPrice を補完する */
+function normalizeEstimateLines(lines: EstimateLine[] | null): EstimateLine[] | null {
+  if (!lines) return null;
+  return lines.map((l) => ({ ...l, costUnitPrice: l.costUnitPrice ?? 0 }));
+}
+
 /** 旧バージョンで保存されたデータに新フィールドを補完する */
 function normalizeProject(p: Project): Project {
   return {
     ...p,
     hearing: normalizeHearing(p.hearing),
     taskIds: p.taskIds ?? DEFAULT_TASK_IDS,
-    estimateLines: p.estimateLines ?? null,
+    estimateLines: normalizeEstimateLines(p.estimateLines ?? null),
+    lost: p.lost ?? null,
     siteAddress: p.siteAddress ?? "",
     paymentTerms: p.paymentTerms ?? "完工後 一括",
     schedule: p.schedule ?? null,
@@ -101,10 +110,14 @@ function normalizeCompany(saved: unknown): CompanyProfile {
     address: str(raw.address),
     representative: str(raw.representative),
     sealImage: typeof raw.sealImage === "string" ? raw.sealImage : null,
+    targetMarginRate:
+      typeof raw.targetMarginRate === "number"
+        ? raw.targetMarginRate
+        : DEFAULT_TARGET_MARGIN_RATE,
   };
 }
 
-/** 工事マスタは単価・単位が増えたため、保存済みの所要時間だけを引き継ぐ */
+/** 工事マスタは項目が増えるため、保存済みの所要時間・単価・原価だけを引き継ぐ */
 function mergeWorks(saved: unknown): WorkItem[] {
   if (!Array.isArray(saved)) return WORK_ITEMS;
   const savedById = new Map<string, Record<string, unknown>>(
@@ -120,6 +133,7 @@ function mergeWorks(saved: unknown): WorkItem[] {
       durationMinutes:
         typeof s.durationMinutes === "number" ? s.durationMinutes : base.durationMinutes,
       unitPrice: typeof s.unitPrice === "number" ? s.unitPrice : base.unitPrice,
+      costPrice: typeof s.costPrice === "number" ? s.costPrice : base.costPrice,
     };
   });
 }
